@@ -1,6 +1,7 @@
 public class Hose {
     private boolean attached;
     private final ioPortAPI api;
+    private boolean tankFull;
 
     /**
      * Hose has a boolean just stating that It's attached or not
@@ -18,7 +19,8 @@ public class Hose {
      * @param sensorAttached is boolean sent by the sensor telling the
      *                       status of the hose.
      */
-    public void updateSenor(boolean sensorAttached) {
+    public void updateSenor(boolean sensorAttached, boolean sensorTankFull) {
+        // checks if the hose is attached
         if (sensorAttached && !attached) {
             attached = true;
             api.send("Hose attached");
@@ -28,9 +30,23 @@ public class Hose {
             api.send("Hose detached");
             System.out.println("Hose detached message sent to API");
         }
+        // checks if the tank is full
+        if (sensorTankFull && !tankFull) {
+            tankFull = true;
+            api.send("Tank Full");
+            System.out.println("Tank Full message sent to API");
+        } else if (!sensorTankFull && tankFull) {
+            tankFull = false;
+            api.send("Tank is not full");
+            System.out.println("Tank is not full message was sent to API");
+        }
     }
 
     public boolean isAttached() {
         return attached;
+    }
+
+    public boolean isTankFull() {
+        return tankFull;
     }
 }
