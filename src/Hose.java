@@ -1,3 +1,11 @@
+
+
+/* 
+ * Looks pretty good. The unknownhost error might an issue with ioPort. Hopefully will fix it by fixing ioPort.
+ * 
+ * -Alex
+*/
+
 public class Hose {
     private boolean attached;
     private final ioPortAPI api;

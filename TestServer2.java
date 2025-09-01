@@ -6,6 +6,11 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.Buffer;
 
+/* 
+ * Now test with a device Ricky made instead.
+ * 
+ * -Alex
+*/
 
 public class TestServer2 {
 

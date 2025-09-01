@@ -8,6 +8,15 @@ import java.net.UnknownHostException;
 import java.util.Queue;
 
 
+/* 
+ * There are no comments.
+ * Get method should return the lastMesage, but also completely remove it from the que so it no longer exists.
+ * Read should just return the lastMessage.
+ * ioPort may need to be a subclass within the ioPortAPI, containing the send, get, and read functions.
+ * 
+ * Otherwise goodjob.
+ * -Alex
+*/
 
 public class ioPortAPI {
     Socket socket;

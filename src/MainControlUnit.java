@@ -1,6 +1,17 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+/* 
+ * There are no comments.
+ * I dont fully understand what this MCU class is supposed to be. What is the point of get and send here?
+ * MainControlUnit could be named something like "hub" and can deal with all connections here.
+ *      It might make sense to make it not take anything and simply be an object containing all connections.
+ * Port connection integer values should be obtained from a map or table of some kind.
+ * 
+ * Otherwise goodjob.
+ * -Alex
+*/
+
 public class MainControlUnit {
     ioPortAPI api;
 
