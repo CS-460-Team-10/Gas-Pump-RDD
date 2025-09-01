@@ -42,7 +42,8 @@ public class ioPortAPI {
         return LastMessage;
 
     }
-    public void read(){
-
+    public String read(){
+        LastMessage = null;
+        return LastMessage;
     }
 }
