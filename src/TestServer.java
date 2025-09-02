@@ -7,10 +7,17 @@ import java.net.Socket;
 import java.nio.Buffer;
 
 
-public class TestServer2 {
 
-    public static void main(String[] args) throws IOException{
-        int Port = 555;
+/* 
+ * Now test with a device Ricky made instead.
+ * 
+ * -Alex
+*/
+
+public class TestServer {
+
+    public static void main(String[] args) throws IOException, InterruptedException{
+        int Port = 333;
         System.out.println("Listening");
         ServerSocket serverSocket = new ServerSocket(Port);
         Socket srSocket = serverSocket.accept();
@@ -21,7 +28,8 @@ public class TestServer2 {
 
         String msg;
         while((msg = bf.readLine()) != null){
-        System.out.println("Recieved from MCU: " + msg);
+        System.out.println("Recieved from MCU: " +  msg);
+
         out.println("Authorized 2 from Port: " + Port);
         }
 
