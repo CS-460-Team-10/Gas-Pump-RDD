@@ -29,7 +29,7 @@ public class Flowmeter {
     /**
      * This code simulates fuel flow increasing gallons pumped.
      * in a real station.
-     * @param gallons the amount of gallons being pumping.
+     * @param gallons the amount of gallons being pumped.
      */
     public void flow(double gallons) {
         if(pumping) {
