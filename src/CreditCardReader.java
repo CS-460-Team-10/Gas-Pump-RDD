@@ -1,21 +1,13 @@
-import java.util.Scanner;
-
-/* 
- * Looks pretty good. The unknownhost error might an issue with ioPort. Hopefully will fix it by fixing ioPort.
- * 
- * -Alex
-*/
 
 public class CreditCardReader {
-    private ioPortAPI api;
+    private ioPort api;
 
     /**
      * CreditCardReader just connects the card reader to the main controller.
      * @param connector is the port #
      */
     public CreditCardReader(int connector) {
-        api = new ioPortAPI();
-        api.ioport(connector);
+        api = ioPort.ChooseDevice(connector);
     }
 
     /**

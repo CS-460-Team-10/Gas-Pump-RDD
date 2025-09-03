@@ -6,6 +6,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
@@ -14,20 +15,15 @@ import javafx.stage.Stage;
 public class screen {
     private screenConfig config;
     private ArrayList<horizontal> hList = new ArrayList<>();
+    private String[] textFont = { "Serif", "Times New Roman", "Courier New" }; // 3 Fonts Supported
+    private Color[] textColor = { Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.WHITE }; // 5 Text Colors Supported
+    private Color[] screenColor = { Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.WHITE }; // 5 Screen Colors Supported
+    private int[] textSize = { 30, 20, 15 }; // 3 Text Sizes Supported
     private int hCount = 5; // Number of rows to create in the terminal
-    private String[] textFont; // 3 Fonts Supported
-    private String[] screenColor; // 5 Screen Colors Supported
-    private int[] textSize; // 3 Text Sizes Supported
-    private int[] fuelTypes; // 3-5 Fuel Types
 
     // Screen graphics
     public screen(Stage screenStage) {
         initializeScreen(screenStage);
-    }
-
-    // Change screen configs
-    public void setConfig(int display) {
-        this.config = new screenConfig(display);
     }
 
     // Initialize the screen
@@ -122,43 +118,77 @@ public class screen {
         }
 
         // Handle UI button navigation (Could pass in a current screen state maybe for future control)
-        private void buttonAction(int buttonNum){
-            String message = "Button " + buttonNum + " was clicked!";
-            System.out.println(message);
-            setConfig(buttonNum);
-        }
+        private void buttonAction(int buttonNum){ sendData(buttonNum); }
     }
 
-    private class screenConfig {
-        public screenConfig(int display){
-            blankScreen();
-            switch (display) {
-                case 1:
-                    welcomeScreen();
-                    break;
+    private void sendData(int buttonNumber){
+        // Place holder function
+    }
 
-                case 2:
-                    chooseFuelScreen();
-                    break;
-            
-                case 3:
-                    connectHoseScreen();
-                    break;
-            
-                case 4:
-                    fuelingScreen();
-                    break;
-            
-                case 5:
-                    transactionCompleteScreen();
-                    break;
-            
-                default:
-                    welcomeScreen();
-                    break;
+    // Class for sets of screen configurations
+    private class screenConfig {
+        public screenConfig(Message msg){
+            interpretMessage(msg.msg);
+        }
+
+        // Interpret markup message (Only pass in what is changing)
+        private void interpretMessage(String msg){
+            String[] tokens = msg.split(":"); // Partition the message
+            boolean wasCombined = false;
+            for(String token : tokens){
+                String[] settings = token.split("/"); // Partition the field settings
+                // Interpret textfield info
+                if(token.charAt(0)=='t'){
+                    boolean combinedField = false;
+
+                    // Determine row number
+                    int fieldNum = Character.getNumericValue(settings[0].charAt(1));
+                    if(Character.isDigit(settings[0].charAt(2))){ combinedField = true; }
+                    if(fieldNum%2==0){ wasCombined = false; } // Reset combine history every even field number
+                    int rowNum = fieldNum/2;
+                    horizontal row = hList.get(rowNum);
+
+                    // Determine if field is/was combined and set the textfield configuration
+                    if(combinedField){ 
+                        wasCombined = true;
+                        combineTextFields(row.tL, row.tLR, row.tR);
+                        fieldConfig(row.tLR, settings); 
+                    } 
+                    else if(fieldNum%2==0 && !wasCombined){ fieldConfig(row.tL, settings); } 
+                    else if (!wasCombined){ fieldConfig(row.tR, settings); }
+                 }
+                // Interpret button info
+                else if(token.charAt(0)=='b'){ 
+                    // Determine row number
+                    int buttonNum = Character.getNumericValue(token.charAt(1));
+                    int rowNum = buttonNum/2;
+                    horizontal row = hList.get(rowNum);
+
+                    if(buttonNum%2==0){ buttonConfig(row.bL, settings); } 
+                    else{ buttonConfig(row.bR, settings); }
+                 }
             }
         }
 
+        // Configure text field
+        private void fieldConfig(Label t, String[] tokens){
+            int size = Integer.parseInt(tokens[1].substring(1));
+            int font = Integer.parseInt(tokens[2].substring(1));
+            int color = Integer.parseInt(tokens[3].substring(1));
+            String displayText = tokens[4];
+
+            t.setTextFill(textColor[color]);
+            t.setFont(Font.font(textFont[font], textSize[size]));
+            t.setText(displayText);
+        }
+
+        // Configure button
+        private void buttonConfig(Button b, String[] tokens){
+            boolean active = tokens[1].substring(1).equals("1");
+            b.setDisable(!active);
+        }
+
+        /*
         public void welcomeScreen(){
             horizontal row1 = hList.get(0);
             horizontal row2 = hList.get(1);
@@ -264,7 +294,7 @@ public class screen {
                 row.tR.setText("");
                 divideTextFields(row.tL, row.tLR, row.tR);
             }
-        }
+        } */
 
         // Make textfield Bold
         private void makeBold(Label a){ a.setFont(Font.font(a.getFont().getFamily(), FontWeight.BOLD, a.getFont().getSize())); }

@@ -15,6 +15,6 @@ public class main extends Application {
         //// Create screen graphics
         new screen(primaryStage);
         // Create system graphics
-        dynamicSystem gasPumpSystem = new dynamicSystem(secondaryStage);
+        //dynamicSystem gasPumpSystem = new dynamicSystem(secondaryStage);
     }
 }
