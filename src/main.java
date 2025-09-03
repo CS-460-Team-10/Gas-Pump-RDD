@@ -13,14 +13,8 @@ public class main extends Application {
         Stage secondaryStage = new Stage();
 
         //// Create screen graphics
-        //new screen(primaryStage);
+        new screen(primaryStage);
         // Create system graphics
         dynamicSystem gasPumpSystem = new dynamicSystem(secondaryStage);
-
-        // TEMORARY SEND METHOD WILL BE REPLACED WITH SOCKET API LATER XXXXXX
-        new screen(primaryStage, buttonId -> {
-            gasPumpSystem.showImage(buttonId);
-        });
-        // TEMORARY SEND METHOD WILL BE REPLACED WITH SOCKET API LATER XXXXXX
     }
 }
