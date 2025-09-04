@@ -1,8 +1,5 @@
-<<<<<<< HEAD
 
 import java.io.BufferedReader;
-=======
->>>>>>> 2b77d42b72aef5aae6ccbcd68b2f520bcc385b4a
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -10,42 +7,36 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Flowmeter {
-<<<<<<< HEAD
-=======
-    private ioPort ioPortAPI;
->>>>>>> 2b77d42b72aef5aae6ccbcd68b2f520bcc385b4a
     private double gallonsPumped;
     private double pricePerGallon;
     private boolean pumping;
     static PrintWriter out;
     static BufferedReader bf;
     static Socket socket;
+    ioPort api;
 
-<<<<<<< HEAD
-    public Flowmeter(double pricePerGallon) {
-=======
-    public Flowmeter(ioPort ioPort, double pricePerGallon) {
-        this.ioPortAPI = ioPort;
->>>>>>> 2b77d42b72aef5aae6ccbcd68b2f520bcc385b4a
+    public Flowmeter(double pricePerGallon, int connector) throws IOException {
         this.pricePerGallon = pricePerGallon;
         this.gallonsPumped = 0.0;
         this.pumping = false;
+
+        api = ioPort.ChooseDevice(connector);
+        api.defineAsServer(connector);
+        System.out.println("Flowmeter listening on connector " + connector);
+
     }
     // Starts pumping fuel
     public void startPumping() {
         pumping = true;
-        send("Pumping started. Price per gallon: $" + pricePerGallon);
+        api.send("Pumping started. Price per gallon: $" + pricePerGallon);
     }
     // stops pumping fuel
     public void stopPumping() {
         pumping = false;
-        send("Pump stopped. Total gallons: " + gallonsPumped
+        api.send("Pump stopped. Total gallons: " + gallonsPumped
         + ", Cost: $" + getTotalCost());
     }
 
-    public void send(String message){
-        out.println(message);
-    }
 
 
 
@@ -57,7 +48,7 @@ public class Flowmeter {
     public void flow(double gallons) {
         if(pumping) {
             gallonsPumped += gallons;
-            send("Flow update:" + gallonsPumped + " gallons pumped.");
+            api.send("Flow update:" + gallonsPumped + " gallons pumped.");
         }
     }
     // gets total gallons being pumped
@@ -70,33 +61,19 @@ public class Flowmeter {
     }
     // check message from the ioPort (e.g. control signals).
     public String checkMessage() throws IOException {
-        return bf.readLine();
+        return api.get();
     }
 
 
 
 public static void main(String[] args) throws IOException, InterruptedException{
-        int Port = 555;
-        System.out.println("Listening");
-        ServerSocket serverSocket = new ServerSocket(Port);
-
-        while(true){
-        Socket srSocket = serverSocket.accept();
-
-        bf = new BufferedReader(new InputStreamReader(srSocket.getInputStream()));
-        out = new PrintWriter(srSocket.getOutputStream(), true);
-
-        String msg;
-        while((msg = bf.readLine()) != null){
-                System.out.println(msg);
-                out.println("This is the FLowmeter, Volume caluclation -> Done -> Bye!");
-
+        Flowmeter fm = new Flowmeter(0, 2);
+        while (true) {
+            String msg = fm.checkMessage();
+            if (msg != null) {
+                fm.api.send("FROM FLOWMETER, CALUCLATION -> SERVER -> DONE!");
+            }
         }
-        bf.close();
-        out.close();
-        srSocket.close();
-
     }
-} 
 }
 

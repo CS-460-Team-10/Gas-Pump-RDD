@@ -1,3 +1,4 @@
+import java.io.IOException;
 
 public class Hose {
     private boolean attached;
@@ -7,10 +8,14 @@ public class Hose {
     /**
      * Hose has a boolean just stating that It's attached or not
      * @param connector is just the port #
+     * @throws IOException 
      */
-    public Hose(int connector) {
+    public Hose(int connector) throws IOException {
         this.attached = false;
-        this.api = ioPort.ChooseDevice(connector);
+        this.api = new StatusPort();
+        api.defineAsServer(connector);
+        System.out.println("Hose is up: " + connector);
+
     }
 
     /**
@@ -49,4 +54,16 @@ public class Hose {
     public boolean isTankFull() {
         return tankFull;
     }
+public static void main(String[] args) throws InterruptedException, Exception {
+    Hose hose = new Hose(4);
+    while (true) {
+        hose.updateSenor(true, false);
+        Thread.sleep(2000);
+        hose.updateSenor(false, true);
+        Thread.sleep(2000);
+        hose.updateSenor(false, false);
+        Thread.sleep(2000);
+        
+    }
+}
 }

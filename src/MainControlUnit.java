@@ -16,10 +16,11 @@ public class MainControlUnit {
     ioPort api;
 
     public MainControlUnit() throws IOException, InterruptedException{
-        ConnectToDevice(1);
-        MCUsend("Card 4232");
+        // ConnectToDevice(2);
+        // MCUsend("Card 4232");
         // ConnectToDevice(2);
         // MCUsend("SENDING TO FLOW METER.");
+        ConnectToDevice(4);
         while (true) {
             System.out.println(MCUget());
         }
@@ -30,7 +31,7 @@ public class MainControlUnit {
     }
     public void ConnectToDevice(int Connector) throws UnknownHostException, IOException{
         api = ioPort.ChooseDevice(Connector);
-        api.ioport(Connector);
+        api.defineAsClient(Connector);
     }
     public String MCUget () throws IOException, InterruptedException{
         while(true){

@@ -14,39 +14,29 @@ import java.net.Socket;
 */
 
 public class CreditCardReader {
-    public static Boolean readCard(String cardNumber) {
-        if (cardNumber != null && !cardNumber.isEmpty()) {
-            return true;
-        }else{
-            return false;
-        }
-    }
+    ioPort api;
 
-
-
-
- public static void main(String[] args) throws IOException, InterruptedException{
-        int Port = 333;
-        System.out.println("Listening");
-        ServerSocket serverSocket = new ServerSocket(Port);
-        Socket srSocket = serverSocket.accept();
-        while(true){
-
-        
-        BufferedReader bf = new BufferedReader(new InputStreamReader(srSocket.getInputStream()));
-        PrintWriter out = new PrintWriter(srSocket.getOutputStream(), true);
-
-        String Card;
-        while((Card = bf.readLine()) != null){
-            boolean Authorized = readCard(Card);
-            if (Authorized == true){
-                out.println(Card  + " Authorized.");
-
-            } else{
-                out.println(Card  + " Unauthorized.");
+    public CreditCardReader(int connector) throws Exception {
+        api = ioPort.ChooseDevice(connector);  
+        api.defineAsServer(connector);         
+        while (true) {
+            String msg = api.get();
+            if (msg != null) {
+                boolean authorized = readCard(msg);
+                if (authorized) {
+                    api.send(msg + " Authorized.");
+                } else {
+                    api.send(msg + " Unauthorized.");
+                }
             }
         }
-
     }
+
+    private static boolean readCard(String cardNumber) {
+        return cardNumber != null && !cardNumber.isEmpty();
+    }
+
+    public static void main(String[] args) throws Exception {
+        new CreditCardReader(1);
     }
 }
