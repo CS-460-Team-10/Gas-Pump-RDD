@@ -6,7 +6,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
-import java.util.Queue;
 
 
 /* 
@@ -39,20 +38,24 @@ abstract class ioPort{
     }
     public abstract void ioport(int Connector) throws UnknownHostException, IOException;
 
-    public void defineAsServer(int connector) throws IOException {
-        this.connector = connector;
-        srSocket = new ServerSocket(DevicePorts.get(connector));
-        socket = srSocket.accept();
-        Out = new PrintWriter(socket.getOutputStream(), true);
-        deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    }
+    // Everything here is redundant, does not fit tech requirements specs, and is also unnecessary
+    // If you notice, this is logically equivalent to the device specialization subclasses
+    // We can do the same thing there instead of writing these
+    // ---------------------------------------------------------------------------------------------------------
+    // public void defineAsServer(int connector) throws IOException {
+    //     this.connector = connector;
+    //     srSocket = new ServerSocket(DevicePorts.get(connector));
+    //     socket = srSocket.accept();
+    //     Out = new PrintWriter(socket.getOutputStream(), true);
+    //     deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    // }
 
-    public void defineAsClient(int connector) throws IOException {
-        this.connector = connector;
-        socket = new Socket("localhost", DevicePorts.get(connector));
-        Out = new PrintWriter(socket.getOutputStream(), true);
-        deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    }
+    // public void defineAsClient(int connector) throws IOException {
+    //     this.connector = connector;
+    //     socket = new Socket("localhost", DevicePorts.get(connector));
+    //     Out = new PrintWriter(socket.getOutputStream(), true);
+    //     deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    // }
 
 
     public void send(String Message){

@@ -3,6 +3,41 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Flowmeter",
+      "request": "launch",
+      "mainClass": "Flowmeter",
+      "projectName": "Gas-Pump-Project_f6958f6e"
+    },
+    {
+      "type": "java",
+      "name": "hub",
+      "request": "launch",
+      "mainClass": "hub",
+      "projectName": "Gas-Pump-Project_f6958f6e"
+    },
+    {
+      "type": "java",
+      "name": "CreditCardReader",
+      "request": "launch",
+      "mainClass": "CreditCardReader",
+      "projectName": "Gas-Pump-Project_f6958f6e"
+    },
+    {
+      "type": "java",
+      "name": "Hose",
+      "request": "launch",
+      "mainClass": "Hose",
+      "projectName": "Gas-Pump-Project_f6958f6e"
+    },
+    {
+      "type": "java",
+      "name": "MainControlUnit",
+      "request": "launch",
+      "mainClass": "MainControlUnit",
+      "projectName": "Gas-Pump-Project_f6958f6e"
+    },
+    {
+      "type": "java",
       "name": "Hose",
       "request": "launch",
       "mainClass": "Hose",

@@ -10,10 +10,10 @@ public class Hose {
      * @param connector is just the port #
      * @throws IOException 
      */
-    public Hose(int connector) throws IOException {
+    public Hose(int devieType, int connector) throws IOException {
         this.attached = false;
-        this.api = new StatusPort();
-        api.defineAsServer(connector);
+        this.api = ioPort.ChooseDevice(devieType);
+        api.ioport(connector);
         System.out.println("Hose is up: " + connector);
 
     }
@@ -55,7 +55,7 @@ public class Hose {
         return tankFull;
     }
 public static void main(String[] args) throws InterruptedException, Exception {
-    Hose hose = new Hose(4);
+    Hose hose = new Hose(1, 1);
     while (true) {
         hose.updateSenor(true, false);
         Thread.sleep(2000);

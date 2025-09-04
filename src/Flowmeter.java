@@ -1,10 +1,7 @@
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
-import java.net.Socket;
 
 public class Flowmeter {
     private double gallonsPumped;
@@ -12,19 +9,17 @@ public class Flowmeter {
     private boolean pumping;
     static PrintWriter out;
     static BufferedReader bf;
-    static Socket socket;
     ioPort api;
 
-    public Flowmeter(double pricePerGallon, int connector) throws IOException {
+    public Flowmeter(double pricePerGallon, int deviceType, int connector) throws IOException {
         this.pricePerGallon = pricePerGallon;
         this.gallonsPumped = 0.0;
         this.pumping = false;
 
-        api = ioPort.ChooseDevice(connector);
-        api.defineAsServer(connector);
-        System.out.println("Flowmeter listening on connector " + connector);
-
+        api = ioPort.ChooseDevice(deviceType);
+        api.ioport(connector);
     }
+
     // Starts pumping fuel
     public void startPumping() {
         pumping = true;
@@ -67,7 +62,7 @@ public class Flowmeter {
 
 
 public static void main(String[] args) throws IOException, InterruptedException{
-        Flowmeter fm = new Flowmeter(0, 2);
+        Flowmeter fm = new Flowmeter(2.49, 2, 2);
         while (true) {
             String msg = fm.checkMessage();
             if (msg != null) {
