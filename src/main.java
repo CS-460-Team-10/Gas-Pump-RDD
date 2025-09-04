@@ -1,20 +1,22 @@
-import javafx.application.Application;
-import javafx.stage.Stage;
+public class main {
+    private final ioPort api = ioPort.ChooseDevice(1);
 
-public class main extends Application {
+    public static void main(String[] args) {
+        main m = new main();
 
-    public static void main(String[] args) { 
-        launch(args); 
+        String thing = "t01/s1B/f1/c4/\"Welcome!\":t23/s3R/f1/c4/\"Use the card reader to begin your transaction.\":t45/s1B/f1/c4/\"*\""; // Welcome screen
+
+        while(true){
+            m.sendData(thing);
+
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+            }
+        }
     }
 
-    // Create Graphics
-    @Override
-    public void start(Stage primaryStage) {
-        Stage secondaryStage = new Stage();
-
-        //// Create screen graphics
-        new screen(primaryStage);
-        // Create system graphics
-        dynamicSystem gasPumpSystem = new dynamicSystem(secondaryStage);
+    private void sendData(String thing){
+        api.send(thing);
     }
 }

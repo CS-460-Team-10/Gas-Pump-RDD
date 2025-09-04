@@ -1,5 +1,8 @@
+<<<<<<< HEAD
 
 import java.io.BufferedReader;
+=======
+>>>>>>> 2b77d42b72aef5aae6ccbcd68b2f520bcc385b4a
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -7,6 +10,10 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Flowmeter {
+<<<<<<< HEAD
+=======
+    private ioPort ioPortAPI;
+>>>>>>> 2b77d42b72aef5aae6ccbcd68b2f520bcc385b4a
     private double gallonsPumped;
     private double pricePerGallon;
     private boolean pumping;
@@ -14,7 +21,12 @@ public class Flowmeter {
     static BufferedReader bf;
     static Socket socket;
 
+<<<<<<< HEAD
     public Flowmeter(double pricePerGallon) {
+=======
+    public Flowmeter(ioPort ioPort, double pricePerGallon) {
+        this.ioPortAPI = ioPort;
+>>>>>>> 2b77d42b72aef5aae6ccbcd68b2f520bcc385b4a
         this.pricePerGallon = pricePerGallon;
         this.gallonsPumped = 0.0;
         this.pumping = false;
