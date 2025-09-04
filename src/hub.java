@@ -11,9 +11,9 @@ public class hub {
     /*
      * Connection Map:
      * ---------------
-     * Hose: 1
+     * Hose: 4
      * Flow Meter: 2
-     * Card Reader: 3
+     * Card Reader: 1
      * Screen: 4
      * 
      * 
@@ -23,18 +23,30 @@ public class hub {
     public hub() throws IOException, InterruptedException{
 
         // Connect to each device
-        for(int i = 1; i <= numOfDevices; i++){
-            ConnectToDevice(i);
-        }
+        // for(int i = 1; i <= numOfDevices; i++){
+        //     ConnectToDevice(i);
+        // }
 
-        String thing = "t01/s1B/f1/c4/\"Welcome!\":t23/s3R/f1/c4/\"Use the card reader to begin your transaction.\":t45/s1B/f1/c4/\"*\""; // Welcome screen
-        int recipient = 4;
+        ConnectToDevice(1); //Credit Card
+        ConnectToDevice(2); // Folwmeter
+        ConnectToDevice(4);// Hose
 
         while (true) {
-            send(thing, recipient);
-            System.out.println("Hub Sending: \n" + thing + "\n\n");
-            System.out.println("Hub Recieving: \n" + get());
-            Thread.sleep(500);
+            // Talk to Card Reader
+            send("Please swipe card.", 1);
+            System.out.println("Hub -> CardReader");
+            System.out.println("CardReader -> Hub: " + get(1));
+
+            // Talk to Flow Meter
+            send("Start Flowing!", 2);
+            System.out.println("Hub -> FlowMeter");
+            System.out.println("FlowMeter -> Hub: " + get(2));
+
+            //  Talk to Hose
+            send("Check Hose Status.", 4);
+            System.out.println("Hub -> Hose");
+            System.out.println("Hose -> Hub: " + get(4));
+            Thread.sleep(2000); 
         }
     }
 
@@ -44,7 +56,7 @@ public class hub {
     }
 
     // Get data from all devices
-    public String get() throws IOException, InterruptedException{
+    public String get(int recipient) throws IOException, InterruptedException{
         while(true){
             for (ioPort api : devices.values()) {
                 String msg = api.get();
@@ -58,7 +70,7 @@ public class hub {
     
     // Start a connection to a device
     public void ConnectToDevice(int Connector) throws UnknownHostException, IOException{
-        ioPort api = ioPort.ChooseDevice(4); // 4 is StatusPort Type for servers
+        ioPort api = new CommunicatorPort();
         api.ioport(Connector);
         devices.put(Connector, api);
         System.out.println("Connector " + Connector + " initialized.");

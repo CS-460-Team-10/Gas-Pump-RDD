@@ -8,7 +8,7 @@ public class CreditCardReader {
     ioPort api;
 
     public CreditCardReader(int deviceType, int connector) throws Exception {
-        api = ioPort.ChooseDevice(deviceType);  
+        api = new StatusPort();  
         api.ioport(connector);      
         
         while (true) {
@@ -41,7 +41,7 @@ public class CreditCardReader {
 
             new Thread(() -> {
                 try {
-                    new CreditCardReader(1, 3); // runs the connection
+                    new CreditCardReader(1, 1); // runs the connection
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

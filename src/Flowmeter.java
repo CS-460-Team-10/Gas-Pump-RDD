@@ -16,7 +16,7 @@ public class Flowmeter {
         this.gallonsPumped = 0.0;
         this.pumping = false;
 
-        api = ioPort.ChooseDevice(deviceType);
+        api = new StatusPort();
         api.ioport(connector);
     }
 
