@@ -29,7 +29,6 @@ public class TestServer {
         String msg;
         while((msg = bf.readLine()) != null){
         System.out.println("Recieved from MCU: " +  msg);
-
         out.println("Authorized 2 from Port: " + Port);
         }
 

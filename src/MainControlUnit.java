@@ -13,26 +13,27 @@ import java.net.UnknownHostException;
 */
 
 public class MainControlUnit {
-    IoPort api;
+    ioPort api;
 
     public MainControlUnit() throws IOException, InterruptedException{
         ConnectToDevice(1);
-        MCUsend("AUTH req for Device 1");
-
-        System.out.println(MCUget());
-
+        MCUsend("Card 4232");
+        // ConnectToDevice(2);
+        // MCUsend("SENDING TO FLOW METER.");
+        while (true) {
+            System.out.println(MCUget());
+        }
     }
     public void MCUsend(String msg){
         api.send(msg);
 
     }
     public void ConnectToDevice(int Connector) throws UnknownHostException, IOException{
-        api = IoPort.ChooseDevice(Connector);
+        api = ioPort.ChooseDevice(Connector);
         api.ioport(Connector);
     }
     public String MCUget () throws IOException, InterruptedException{
         while(true){
-            api.poll();
             String msg = api.get();
             if (msg != null){
                 return msg;

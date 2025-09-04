@@ -19,7 +19,7 @@ import java.util.Queue;
  * -Alex
 */
 
-abstract class IoPort{
+abstract class ioPort{
     int connector;
     Socket socket;
     PrintWriter Out;
@@ -28,7 +28,7 @@ abstract class IoPort{
     HashMap<Integer, Integer> DevicePorts = new HashMap<>();
 
 
-    public IoPort(){
+    public ioPort(){
         DevicePorts.put(1,  333);
         DevicePorts.put(2,  555);
         DevicePorts.put(3,  888);
@@ -39,7 +39,12 @@ abstract class IoPort{
 
 
 
-    public void poll() {
+    public void send(String Message){
+        if (Out != null){
+            Out.println(Message);
+        }
+    }
+    public String get() {
         try {
             if (deviceResponse != null && deviceResponse.ready()) {
                 LastMessage = "Port " + connector + ": " + deviceResponse.readLine();
@@ -47,31 +52,29 @@ abstract class IoPort{
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-
-
-    public void send(String Message){
-        if (Out != null){
-            Out.println(Message);
-        }
-    }
-    public String get() {
+    
         String tmp = LastMessage;
         LastMessage = null;
         return tmp;
     }
 
     public String read() {
+
+    try {
+            if (deviceResponse != null && deviceResponse.ready()) {
+                LastMessage = "Port " + connector + ": " + deviceResponse.readLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return LastMessage;
     }
 
-    public static IoPort ChooseDevice(int Connector){
+    public static ioPort ChooseDevice(int Connector){
         if (Connector == 1){
-            return new StatusPort();
-        }
+            return new CommunicatorPort();        }
         if (Connector == 2){
-            return new CommunicatorPort();
+            return new ControlPort();
         }
         if (Connector == 3){
             return new ActuatorPort();
@@ -80,59 +83,52 @@ abstract class IoPort{
     }
 
 }
-class CommunicatorPort extends IoPort {
+class CommunicatorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
         socket = new Socket("localhost", DevicePorts.get(Connector));
         Out = new PrintWriter(socket.getOutputStream(), true);
         deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 
+}
+
+class StatusPort extends ioPort {
+    ServerSocket srSocket;
     @Override
-    public String read() {
-        throw new UnsupportedOperationException("Communicator cannot read");
+    public void ioport(int Connector) throws UnknownHostException, IOException {
+        srSocket = new ServerSocket(DevicePorts.get(Connector));
+        socket = srSocket.accept();
+        Out = new PrintWriter(socket.getOutputStream(), true);
+        deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+    }
+
+}
+
+class ControlPort extends ioPort {
+    @Override
+    public void ioport(int Connector) throws UnknownHostException, IOException {
+        socket = new Socket("localhost", DevicePorts.get(Connector));
+        Out = new PrintWriter(socket.getOutputStream(), true);
+        deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 }
 
 
-
-class StatusPort extends IoPort {
+class MonitorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
         socket = new Socket("localhost", DevicePorts.get(Connector));
         Out = new PrintWriter(socket.getOutputStream(), true);
         deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    }
-
-    @Override
-    public void send(String message) {
-        throw new UnsupportedOperationException("Status cannot send");
-    }
-
-    @Override
-    public String get() {
-        throw new UnsupportedOperationException("Status cannot get");
     }
 }
 
-class ActuatorPort extends IoPort {
+class ActuatorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
         socket = new Socket("localhost", DevicePorts.get(Connector));
         Out = new PrintWriter(socket.getOutputStream(), true);
         deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    }
-
-    @Override
-    public String get() {
-        throw new UnsupportedOperationException("Actuator cannot get");
-    }
-
-    @Override
-    public String read() {
-        throw new UnsupportedOperationException("Actuator cannot read");
     }
 }
