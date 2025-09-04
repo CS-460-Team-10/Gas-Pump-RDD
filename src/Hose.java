@@ -1,5 +1,11 @@
 import java.io.IOException;
 
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+
 public class Hose {
     private boolean attached;
     private final ioPort api;
@@ -29,21 +35,17 @@ public class Hose {
         if (sensorAttached && !attached) {
             attached = true;
             api.send("Hose attached");
-            System.out.println("Hose attached message sent to API");
         } else if (!sensorAttached && attached) {
             attached = false;
             api.send("Hose detached");
-            System.out.println("Hose detached message sent to API");
         }
         // checks if the tank is full
         if (sensorTankFull && !tankFull) {
             tankFull = true;
             api.send("Tank Full");
-            System.out.println("Tank Full message sent to API");
         } else if (!sensorTankFull && tankFull) {
             tankFull = false;
             api.send("Tank is not full");
-            System.out.println("Tank is not full message was sent to API");
         }
     }
 
@@ -54,16 +56,38 @@ public class Hose {
     public boolean isTankFull() {
         return tankFull;
     }
-public static void main(String[] args) throws InterruptedException, Exception {
-    Hose hose = new Hose(1, 1);
-    while (true) {
-        hose.updateSenor(true, false);
-        Thread.sleep(2000);
-        hose.updateSenor(false, true);
-        Thread.sleep(2000);
-        hose.updateSenor(false, false);
-        Thread.sleep(2000);
-        
+
+    public static class HoseGraphics extends Application {
+        @Override
+        public void start(Stage primaryStage) {
+            Label label = new Label("Hose Ready");
+            StackPane root = new StackPane(label);
+
+            Scene scene = new Scene(root, 300, 200);
+            primaryStage.setTitle("Hose");
+            primaryStage.setScene(scene);
+            primaryStage.show();
+
+            new Thread(() -> {
+                try {
+                    Hose hose = new Hose(1, 1);
+                    while (true) {
+                        hose.updateSenor(true, false);
+                        Thread.sleep(2000);
+                        hose.updateSenor(false, true);
+                        Thread.sleep(2000);
+                        hose.updateSenor(false, false);
+                        Thread.sleep(2000);
+                        
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, "Hose-Conn").start();
+        }
     }
-}
+
+    public static void main(String[] args) throws InterruptedException, Exception {
+        Application.launch(Hose.HoseGraphics.class, args);
+    }
 }
