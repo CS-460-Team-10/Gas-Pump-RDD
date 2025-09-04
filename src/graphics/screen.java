@@ -1,4 +1,7 @@
 import java.util.ArrayList;
+
+import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -12,8 +15,9 @@ import javafx.scene.text.FontPosture;
 import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
-public class screen {
+public class screen extends Application {
     private screenConfig config;
+    private ioPort api;
     private ArrayList<horizontal> hList = new ArrayList<>();
     private String[] textFont = { "Serif", "Times New Roman", "Courier New" }; // 3 Fonts Supported
     private Color[] textColor = { Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.WHITE }; // 5 Text Colors Supported
@@ -21,9 +25,25 @@ public class screen {
     private int[] textSize = { 30, 20, 15 }; // 3 Text Sizes Supported
     private int hCount = 5; // Number of rows to create in the terminal
 
-    // Screen graphics
-    public screen(Stage screenStage) {
-        initializeScreen(screenStage);
+    public screen() {  }
+
+    public static void main(String[] args) { launch(args); }
+
+    @Override
+    public void start(Stage primaryStage) {
+        this.api = ioPort.ChooseDevice(2);
+        initializeScreen(primaryStage);
+
+        // Monitor for updates in messages
+        new Thread(() -> {
+            while (true) {
+                String msg = api.get(); // blocking call
+                if (msg != null && !msg.isBlank()) {
+                    String finalMsg = msg;
+                    Platform.runLater(() -> config = new screenConfig(finalMsg));
+                }
+            }
+        }).start();
     }
 
     // Initialize the screen
@@ -73,7 +93,7 @@ public class screen {
 
             bL = new Button();
             bL.setOnAction(event -> {
-                buttonAction(leftID);
+                sendData(bL, leftID);
             });
 
             tL = new Label();
@@ -82,7 +102,7 @@ public class screen {
 
             bR = new Button();
             bR.setOnAction(event -> {
-                buttonAction(rightID);
+                sendData(bR, rightID);
             });
 
             // Wrap buttons and fields into HBox (In the order: Button, Field, Field, Field, Button)
@@ -116,19 +136,19 @@ public class screen {
             
             h.getChildren().addAll(bL, tL, tLR, tR, bR);
         }
-
-        // Handle UI button navigation (Could pass in a current screen state maybe for future control)
-        private void buttonAction(int buttonNum){ sendData(buttonNum); }
     }
 
-    private void sendData(int buttonNumber){
-        // Place holder function
+    // Send data through api
+    private void sendData(Button b, int id){
+        api.send("bp" + id);
     }
 
     // Class for sets of screen configurations
     private class screenConfig {
-        public screenConfig(Message msg){
-            interpretMessage(msg.msg);
+        public screenConfig(String msg){
+            if(msg != null || msg != ""){
+                interpretMessage(msg);
+            }
         }
 
         // Interpret markup message (Only pass in what is changing)

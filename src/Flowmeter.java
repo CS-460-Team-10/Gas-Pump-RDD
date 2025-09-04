@@ -1,14 +1,12 @@
-package src;
-
 import java.io.IOException;
 
 public class Flowmeter {
-    private ioPortAPI ioPortAPI;
+    private ioPort ioPortAPI;
     private double gallonsPumped;
     private double pricePerGallon;
     private boolean pumping;
 
-    public Flowmeter(ioPortAPI ioPort, double pricePerGallon) {
+    public Flowmeter(ioPort ioPort, double pricePerGallon) {
         this.ioPortAPI = ioPort;
         this.pricePerGallon = pricePerGallon;
         this.gallonsPumped = 0.0;
