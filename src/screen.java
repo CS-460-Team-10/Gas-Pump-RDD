@@ -30,7 +30,8 @@ public class screen {
         private ArrayList<horizontal> hList = new ArrayList<>();
         private String[] textFont = { "Serif", "Times New Roman", "Courier New" }; // 3 Fonts Supported
         private Color[] textColor = { Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.WHITE }; // 5 Text Colors Supported
-        private Color[] screenColor = { Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.WHITE }; // 5 Screen Colors Supported
+        Color myBlue = Color.web("#1e3a8a");
+        private Color[] screenColor = { Color.BLACK, Color.RED, Color.GREEN, myBlue, Color.WHITE }; // 5 Screen Colors Supported
         private int[] textSize = { 30, 20, 15 }; // 3 Text Sizes Supported
         private int hCount = 5; // Number of rows to create in the terminal
 
@@ -41,13 +42,26 @@ public class screen {
             // Connect to hub
             new Thread(() -> {
                 try {
-                    this.sc = new screen(1, 4);
+                    this.sc = new screen(5, 1);
+                    config = new screenConfig(null);
+
+                    // Update screen via messages from hub
                     while (true) {
                         String msg = sc.api.get();
-                        if (msg != null) {
-                            System.out.println("Screen Receiving: \n" + msg);
-                            // Optionally, update UI with Platform.runLater(() -> { /* apply msg to labels */ });
-                        }
+                        if (msg != null && !msg.isBlank()) {
+                        int i = msg.indexOf(':');
+                        String uiMsg = (i >= 0) ? msg.substring(i + 1).trim() : msg.trim();
+                        System.out.println("Screen Receiving: \n" + uiMsg);
+
+                        javafx.application.Platform.runLater(() -> {
+                            // all UI changes must be on FX thread
+                            if (config == null) {
+                                config = new screenConfig(null); // or skip if your ctor expects a real message
+                            }
+                            config.blankScreen();
+                            config = new screenConfig(uiMsg);
+                        });
+                    }
                         Thread.sleep(500);
                     }
                 } catch (Exception e) {
@@ -78,7 +92,12 @@ public class screen {
                 vertical.getChildren().add(h.h);
             }
 
-            vertical.setStyle("-fx-background-color: #1e3a8a;"); // blue background for entire UI
+
+            String initialScreenColor = String.format("rgb(%d, %d, %d);",
+                (int) (screenColor[3].getRed() * 255),
+                (int) (screenColor[3].getGreen() * 255),
+                (int) (screenColor[3].getBlue() * 255));
+            vertical.setStyle("-fx-background-color: " + initialScreenColor); // use array value
             Scene scene = new Scene(vertical, 600, 400);
             screenStage.setTitle("Gas Pump Terminal");
             screenStage.setScene(scene);
@@ -157,8 +176,18 @@ public class screen {
         // Class for sets of screen configurations
         private class screenConfig {
             public screenConfig(String msg){
-                if(msg != null || msg != ""){
+                if(msg != null && !msg.isBlank()){
                     interpretMessage(msg);
+                }
+            }
+
+            // Create a blank screen
+            public void blankScreen(){              
+                for(horizontal row : hList){
+                    row.tL.setText("");
+                    row.tLR.setText("");
+                    row.tR.setText("");
+                    divideTextFields(row.tL, row.tLR, row.tR);
                 }
             }
 
@@ -170,11 +199,11 @@ public class screen {
                     String[] settings = token.split("/"); // Partition the field settings
                     // Interpret textfield info
                     if(token.charAt(0)=='t'){
-                        boolean combinedField = false;
+                        String id = settings[0]; // "t0" or "t01"
+                        int fieldNum = Character.getNumericValue(id.charAt(1));
+                        boolean combinedField = id.length() > 2 && Character.isDigit(id.charAt(2));
 
                         // Determine row number
-                        int fieldNum = Character.getNumericValue(settings[0].charAt(1));
-                        if(Character.isDigit(settings[0].charAt(2))){ combinedField = true; }
                         if(fieldNum%2==0){ wasCombined = false; } // Reset combine history every even field number
                         int rowNum = fieldNum/2;
                         horizontal row = hList.get(rowNum);
@@ -207,7 +236,7 @@ public class screen {
                 char style = tokens[1].charAt(2);
                 int font = Character.getNumericValue(tokens[2].charAt(1))-1;
                 int color = Character.getNumericValue(tokens[3].charAt(1))-1;
-                String displayText = tokens[4].replace("\"", "");
+                String displayText = tokens[4].replace("\"", "").replace("\\n", "\n");
 
                 t.setTextFill(textColor[color]);
                 t.setFont(Font.font(textFont[font], textSize[size]));
@@ -221,114 +250,6 @@ public class screen {
                 boolean active = tokens[1].substring(1).equals("1");
                 b.setDisable(!active);
             }
-
-            /*
-            public void welcomeScreen(){                // Format t01/s1/f1/c4/"Welcome!":t23/s3/f1/c4/"Use the card reader to begin your transaction.":t45/s1/f1/c4/"*"
-                horizontal row1 = hList.get(0);
-                horizontal row2 = hList.get(1);
-                combineTextFields(row1.tL, row1.tLR, row1.tR);
-                combineTextFields(row2.tL, row2.tLR, row2.tR);
-
-                row1.tLR.setFont(Font.font("Serif", 30));
-                row1.tLR.setText("Welcome!");
-                makeBold(row1.tLR);
-
-                row2.tLR.setFont(Font.font("Serif", 15));
-                row2.tLR.setText("Use the card reader to begin your transaction.");
-
-                horizontal row3 = hList.get(2);
-                combineTextFields(row3.tL, row3.tLR, row3.tR);
-                row3.tLR.setFont(Font.font("Serif", 50));
-                row3.tLR.setText("*");
-            }
-
-            public void chooseFuelScreen(){
-                horizontal row1 = hList.get(0);
-                horizontal row2 = hList.get(1);
-                horizontal row3 = hList.get(2);
-                horizontal row4 = hList.get(3);
-                horizontal row5 = hList.get(4);
-                combineTextFields(row1.tL, row1.tLR, row1.tR);
-
-                row1.tLR.setFont(Font.font("Serif", 20));
-                row1.tLR.setText("Payment approved. Select fuel type:");
-
-                row2.tL.setFont(Font.font("Serif", 15));
-                row2.tL.setText("Unleaded");
-                row2.tR.setFont(Font.font("Serif", 15));
-                row2.tR.setText("Confirm");
-
-                row3.tL.setFont(Font.font("Serif", 15));
-                row3.tL.setText("Premium");
-
-                row4.tL.setFont(Font.font("Serif", 15));
-                row4.tL.setText("Premium Plus");
-
-                row5.tL.setFont(Font.font("Serif", 15));
-                row5.tL.setText("Gasoline");
-
-                makeItalic(row2.tL);
-                makeItalic(row3.tL);
-                makeItalic(row4.tL);
-                makeItalic(row5.tL);
-                makeBold(row1.tLR);
-            }
-
-            public void connectHoseScreen(){
-                horizontal row1 = hList.get(2);
-                combineTextFields(row1.tL, row1.tLR, row1.tR);
-
-                row1.tLR.setFont(Font.font("Serif", 20));
-                row1.tLR.setText("Attach the hose to your vehicle's \n       gas tank to begin fueling.");
-                makeBold(row1.tLR);
-
-                horizontal row2 = hList.get(3);
-                combineTextFields(row2.tL, row2.tLR, row2.tR);
-                row2.tLR.setFont(Font.font("Serif", 50));
-                row2.tLR.setText("*");
-            }
-
-            public void fuelingScreen(){
-                horizontal row1 = hList.get(2);
-                combineTextFields(row1.tL, row1.tLR, row1.tR);
-
-                row1.tLR.setFont(Font.font("Serif", 20));
-                row1.tLR.setText("Fueling in progress...");
-                makeBold(row1.tLR);
-
-                horizontal row2 = hList.get(3);
-                combineTextFields(row2.tL, row2.tLR, row2.tR);
-                row2.tLR.setFont(Font.font("Serif", 50));
-                row2.tLR.setText("*");
-            }
-
-            public void transactionCompleteScreen(){
-                horizontal row1 = hList.get(0);
-                horizontal row2 = hList.get(2);
-                combineTextFields(row1.tL, row1.tLR, row1.tR);
-                combineTextFields(row2.tL, row2.tLR, row2.tR);
-
-                row1.tLR.setFont(Font.font("Serif", 20));
-                row1.tLR.setText("Transaction complete.");
-                makeBold(row1.tLR);
-                row2.tLR.setFont(Font.font("Serif", 20));
-                row2.tLR.setText("Thank you!");
-                makeItalic(row2.tLR);
-
-                horizontal row3 = hList.get(3);
-                combineTextFields(row3.tL, row3.tLR, row3.tR);
-                row3.tLR.setFont(Font.font("Serif", 50));
-                row3.tLR.setText("*");
-            }
-
-            public void blankScreen(){
-                for(horizontal row : hList){
-                    row.tL.setText("");
-                    row.tLR.setText("");
-                    row.tR.setText("");
-                    divideTextFields(row.tL, row.tLR, row.tR);
-                }
-            } */
 
             // Make textfield Bold
             private void makeBold(Label a){ a.setFont(Font.font(a.getFont().getFamily(), FontWeight.BOLD, a.getFont().getSize())); }

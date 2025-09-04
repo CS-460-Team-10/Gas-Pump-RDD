@@ -1,9 +1,12 @@
 import java.io.IOException;
+
+import helpers.imageLoader;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+
 public class Hose {
     private boolean attached;
     private final ioPort api;
@@ -14,9 +17,9 @@ public class Hose {
      * @param connector is just the port #
      * @throws IOException 
      */
-    public Hose(int connector) throws IOException {
+    public Hose(int devieType, int connector) throws IOException {
         this.attached = false;
-        this.api = new StatusPort();
+        this.api = ioPort.ChooseDevice(devieType);
         api.ioport(connector);
         System.out.println("Hose is up: " + connector);
 
@@ -28,26 +31,22 @@ public class Hose {
      * @param sensorAttached is boolean sent by the sensor telling the
      *                       status of the hose.
      */
-    public void updateSensor(boolean sensorAttached, boolean sensorTankFull) {
+    public void updateSenor(boolean sensorAttached, boolean sensorTankFull) {
         // checks if the hose is attached
         if (sensorAttached && !attached) {
             attached = true;
             api.send("Hose attached");
-            System.out.println("Hose attached message sent to API");
         } else if (!sensorAttached && attached) {
             attached = false;
             api.send("Hose detached");
-            System.out.println("Hose detached message sent to API");
         }
         // checks if the tank is full
         if (sensorTankFull && !tankFull) {
             tankFull = true;
             api.send("Tank Full");
-            System.out.println("Tank Full message sent to API");
         } else if (!sensorTankFull && tankFull) {
             tankFull = false;
             api.send("Tank is not full");
-            System.out.println("Tank is not full message was sent to API");
         }
     }
 
@@ -58,36 +57,55 @@ public class Hose {
     public boolean isTankFull() {
         return tankFull;
     }
+
     public static class HoseGraphics extends Application {
+        private Hose hose;
+
         @Override
         public void start(Stage primaryStage) {
-            Label label = new Label("Hose Ready");
-            StackPane root = new StackPane(label);
+            new Thread(() -> {
+                try {
+                    Hose h = new Hose(1, 4);
+                    this.hose = h;
+                    System.out.println("Hose connected (client on 4)");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, "Hose-Conn").start();
+
+            imageLoader img = new imageLoader();
+            img.loadImages();
+
+            // Show idle reader image
+            ImageView hoseView = new ImageView(img.imageList.get(1));
+            hoseView.setPreserveRatio(true);
+            hoseView.setFitWidth(300);
+            hoseView.setSmooth(true);
+            hoseView.setPickOnBounds(true);
+
+            final boolean[] toggled = {false}; // Clean this later XXXXXXXXXXXXXX - works for now
+            hoseView.setOnMouseClicked(e -> {
+                if (toggled[0]) {
+                    hoseView.setImage(img.imageList.get(1));
+                } else {
+                    hoseView.setImage(img.imageList.get(4));
+                }
+                toggled[0] = !toggled[0];
+                if (this.hose != null) {
+                    this.hose.updateSenor(toggled[0], false);
+                }
+            });
+
+            StackPane root = new StackPane(hoseView);
 
             Scene scene = new Scene(root, 300, 200);
             primaryStage.setTitle("Hose");
             primaryStage.setScene(scene);
             primaryStage.show();
-
-            new Thread(() -> {
-                try {
-                    Hose hose = new Hose(4); // Hose runs on connector 4
-                    while (true) {
-                        hose.updateSensor(true, false);
-                        Thread.sleep(2000);
-                        hose.updateSensor(false, true);
-                        Thread.sleep(2000);
-                        hose.updateSensor(false, false);
-                        Thread.sleep(2000);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }, "Hose-Conn").start();
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws InterruptedException, Exception {
         Application.launch(Hose.HoseGraphics.class, args);
     }
 }

@@ -7,6 +7,17 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
+
+/* 
+ * There are no comments.
+ * Get method should return the lastMesage, but also completely remove it from the que so it no longer exists.
+ * Read should just return the lastMessage.
+ * ioPort may need to be a subclass within the ioPortAPI, containing the send, get, and read functions.
+ * 
+ * Otherwise goodjob.
+ * -Alex
+*/
+
 abstract class ioPort{
     int connector;
     Socket socket;
@@ -23,8 +34,14 @@ abstract class ioPort{
         DevicePorts.put(3,  888);
         DevicePorts.put(4, 999);
 
+
     }
     public abstract void ioport(int Connector) throws UnknownHostException, IOException;
+
+    // Everything here is redundant, does not fit tech requirements specs, and is also unnecessary
+    // If you notice, this is logically equivalent to the device specialization subclasses
+    // We can do the same thing there instead of writing these
+    // ---------------------------------------------------------------------------------------------------------
 
 
     public void send(String Message){
@@ -81,7 +98,6 @@ abstract class ioPort{
 class CommunicatorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
         socket = new Socket("localhost", DevicePorts.get(Connector));
         Out = new PrintWriter(socket.getOutputStream(), true);
         deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -93,7 +109,6 @@ class StatusPort extends ioPort {
     ServerSocket srSocket;
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
         srSocket = new ServerSocket(DevicePorts.get(Connector));
         socket = srSocket.accept();
         Out = new PrintWriter(socket.getOutputStream(), true);
@@ -105,7 +120,6 @@ class StatusPort extends ioPort {
 class ControlPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
         socket = new Socket("localhost", DevicePorts.get(Connector));
         Out = new PrintWriter(socket.getOutputStream(), true);
         deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -116,7 +130,6 @@ class ControlPort extends ioPort {
 class MonitorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
         socket = new Socket("localhost", DevicePorts.get(Connector));
         Out = new PrintWriter(socket.getOutputStream(), true);
         deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -126,7 +139,6 @@ class MonitorPort extends ioPort {
 class ActuatorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
         socket = new Socket("localhost", DevicePorts.get(Connector));
         Out = new PrintWriter(socket.getOutputStream(), true);
         deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
