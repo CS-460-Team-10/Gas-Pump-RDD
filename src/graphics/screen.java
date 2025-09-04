@@ -32,6 +32,7 @@ public class screen extends Application {
     @Override
     public void start(Stage primaryStage) {
         this.api = ioPort.ChooseDevice(2);
+        try { this.api.ioport(1); } catch (Exception e) { e.printStackTrace(); }
         initializeScreen(primaryStage);
 
         // Monitor for updates in messages
@@ -41,6 +42,11 @@ public class screen extends Application {
                 if (msg != null && !msg.isBlank()) {
                     String finalMsg = msg;
                     Platform.runLater(() -> config = new screenConfig(finalMsg));
+                }
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
@@ -140,6 +146,7 @@ public class screen extends Application {
 
     // Send data through api
     private void sendData(Button b, int id){
+        System.out.println("SCREEN: bp" + id);
         api.send("bp" + id);
     }
 
@@ -192,13 +199,16 @@ public class screen extends Application {
 
         // Configure text field
         private void fieldConfig(Label t, String[] tokens){
-            int size = Integer.parseInt(tokens[1].substring(1));
-            int font = Integer.parseInt(tokens[2].substring(1));
-            int color = Integer.parseInt(tokens[3].substring(1));
-            String displayText = tokens[4];
+            int size = Character.getNumericValue(tokens[1].charAt(1))-1;
+            char style = tokens[1].charAt(2);
+            int font = Character.getNumericValue(tokens[2].charAt(1))-1;
+            int color = Character.getNumericValue(tokens[3].charAt(1))-1;
+            String displayText = tokens[4].replace("\"", "");
 
             t.setTextFill(textColor[color]);
             t.setFont(Font.font(textFont[font], textSize[size]));
+            if(style == 'B'){makeBold(t);}
+            else if(style == 'I') {makeItalic(t);}
             t.setText(displayText);
         }
 
@@ -209,7 +219,7 @@ public class screen extends Application {
         }
 
         /*
-        public void welcomeScreen(){
+        public void welcomeScreen(){                // Format t01/s1/f1/c4/"Welcome!":t23/s3/f1/c4/"Use the card reader to begin your transaction.":t45/s1/f1/c4/"*"
             horizontal row1 = hList.get(0);
             horizontal row2 = hList.get(1);
             combineTextFields(row1.tL, row1.tLR, row1.tR);
