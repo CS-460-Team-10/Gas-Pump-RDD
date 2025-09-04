@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "hub",
+      "request": "launch",
+      "mainClass": "hub",
+      "projectName": "Gas-Pump-RDD_c786bb7e"
+    },
+    {
+      "type": "java",
       "name": "Flowmeter",
       "request": "launch",
       "mainClass": "Flowmeter",

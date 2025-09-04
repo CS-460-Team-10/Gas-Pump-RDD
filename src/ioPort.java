@@ -102,6 +102,9 @@ abstract class ioPort{
         if (Connector == 4){
             return new StatusPort();
         }
+        if (Connector == 5){
+            return new MonitorPort();
+        }
         return null;
     }
 
