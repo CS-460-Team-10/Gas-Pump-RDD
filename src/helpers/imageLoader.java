@@ -22,6 +22,13 @@ public class imageLoader {
                 return name.endsWith(".jpg");
             });
 
+            // Sort images in array so indexing is the same across systems
+            imageList.sort((img1, img2) -> {
+                String n1 = img1.getUrl();
+                String n2 = img2.getUrl();
+                return n1.compareToIgnoreCase(n2);
+            });
+
             // Add all image files to the array list
             images.forEach(i -> {
                 String uri = i.toUri().toString();

@@ -42,22 +42,22 @@ public class CreditCardReader {
             img.loadImages();
 
             // Show idle reader image
-            ImageView reader = new ImageView(img.imageList.get(3));
+            ImageView reader = new ImageView(img.imageList.get(2));
             reader.setPreserveRatio(true);
             reader.setFitWidth(300);
             reader.setSmooth(true);
             reader.setPickOnBounds(true);
 
             reader.setOnMouseClicked(e -> {
-                reader.setImage(img.imageList.get(2));
+                reader.setImage(img.imageList.get(0));
 
-                PauseTransition first = new PauseTransition(Duration.millis(1000));
-                PauseTransition second = new PauseTransition(Duration.millis(2000)); 
-                first.setOnFinished(ev -> { reader.setImage(img.imageList.get(0)); second.play(); });
-                second.setOnFinished(ev -> { reader.setImage(img.imageList.get(3)); });
+                PauseTransition first = new PauseTransition(Duration.millis(2000));
+                PauseTransition second = new PauseTransition(Duration.millis(1000)); 
+                PauseTransition third = new PauseTransition(Duration.millis(500)); 
+                first.setOnFinished(ev -> { reader.setImage(img.imageList.get(1)); second.play(); });
+                second.setOnFinished(ev -> { this.cardReader.readCard("Card Tapped!"); third.play(); });
+                third.setOnFinished(ev -> { reader.setImage(img.imageList.get(2)); });
                 first.play();
-
-                this.cardReader.readCard("Card Tapped!");
             });
 
             StackPane root = new StackPane(reader);

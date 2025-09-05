@@ -3,6 +3,41 @@
   "configurations": [
     {
       "type": "java",
+      "name": "testImageSort",
+      "request": "launch",
+      "mainClass": "helpers.testImageSort",
+      "projectName": "Gas-Pump-Project_c33270ba"
+    },
+    {
+      "type": "java",
+      "name": "main",
+      "request": "launch",
+      "mainClass": "helpers.main",
+      "projectName": "Gas-Pump-Project_c33270ba"
+    },
+    {
+      "type": "java",
+      "name": "imageLoader$Main",
+      "request": "launch",
+      "mainClass": "helpers.imageLoader$Main",
+      "projectName": "Gas-Pump-Project_c33270ba"
+    },
+    {
+      "type": "java",
+      "name": "Flowmeter",
+      "request": "launch",
+      "mainClass": "Flowmeter",
+      "projectName": "Gas-Pump-Project_c33270ba"
+    },
+    {
+      "type": "java",
+      "name": "main",
+      "request": "launch",
+      "mainClass": "main",
+      "projectName": "Gas-Pump-Project_c33270ba"
+    },
+    {
+      "type": "java",
       "name": "hub",
       "request": "launch",
       "mainClass": "hub",

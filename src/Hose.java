@@ -77,7 +77,7 @@ public class Hose {
             img.loadImages();
 
             // Show idle reader image
-            ImageView hoseView = new ImageView(img.imageList.get(1));
+            ImageView hoseView = new ImageView(img.imageList.get(3));
             hoseView.setPreserveRatio(true);
             hoseView.setFitWidth(300);
             hoseView.setSmooth(true);
@@ -86,7 +86,7 @@ public class Hose {
             final boolean[] toggled = {false}; // Clean this later XXXXXXXXXXXXXX - works for now
             hoseView.setOnMouseClicked(e -> {
                 if (toggled[0]) {
-                    hoseView.setImage(img.imageList.get(1));
+                    hoseView.setImage(img.imageList.get(3));
                 } else {
                     hoseView.setImage(img.imageList.get(4));
                 }

@@ -3,6 +3,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import helpers.imageLoader;
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Stage;
+
 public class Flowmeter {
     private double gallonsPumped;
     private double pricePerGallon;
@@ -59,16 +66,45 @@ public class Flowmeter {
         return api.get();
     }
 
+    public static class FlowmeterGraphics extends Application {
+        private Flowmeter meter;
 
+        @Override
+        public void start(Stage primaryStage) {
+            new Thread(() -> {
+                try {
+                    Flowmeter fm = new Flowmeter(2.49, 2, 2);
+                    this.meter = fm;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, "Flowmeter-Conn").start();
 
-public static void main(String[] args) throws IOException, InterruptedException{
-        Flowmeter fm = new Flowmeter(2.49, 2, 2);
-        while (true) {
-            String msg = fm.checkMessage();
-            if (msg != null) {
-                fm.api.send("FROM FLOWMETER, CALUCLATION -> SERVER -> DONE!");
-            }
+            imageLoader img = new imageLoader();
+            img.loadImages();
+
+            // Show idle reader image
+            StackPane root;
+            ImageView meterView = new ImageView(img.imageList.get(0));
+            meterView.setPreserveRatio(true);
+            meterView.setFitWidth(300);
+            meterView.setSmooth(true);
+            meterView.setPickOnBounds(true);
+            meterView.setOnMouseClicked(e -> {
+                this.meter.api.send("Flow meter says hello.");
+            });
+
+            root = new StackPane(meterView);
+
+            Scene scene = new Scene(root, 300, 200);
+            primaryStage.setTitle("Flowmeter");
+            primaryStage.setScene(scene);
+            primaryStage.show();
         }
+    }
+
+    public static void main(String[] args) throws InterruptedException, Exception {
+        Application.launch(Flowmeter.FlowmeterGraphics.class, args);
     }
 }
 

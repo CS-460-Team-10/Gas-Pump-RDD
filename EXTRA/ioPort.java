@@ -7,17 +7,6 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
-
-/* 
- * There are no comments.
- * Get method should return the lastMesage, but also completely remove it from the que so it no longer exists.
- * Read should just return the lastMessage.
- * ioPort may need to be a subclass within the ioPortAPI, containing the send, get, and read functions.
- * 
- * Otherwise goodjob.
- * -Alex
-*/
-
 abstract class ioPort{
     int connector;
     Socket socket;
@@ -37,11 +26,6 @@ abstract class ioPort{
 
     }
     public abstract void ioport(int Connector) throws UnknownHostException, IOException;
-
-    // Everything here is redundant, does not fit tech requirements specs, and is also unnecessary
-    // If you notice, this is logically equivalent to the device specialization subclasses
-    // We can do the same thing there instead of writing these
-    // ---------------------------------------------------------------------------------------------------------
 
 
     public void send(String Message){
