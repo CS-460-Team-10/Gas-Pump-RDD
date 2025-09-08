@@ -30,19 +30,3 @@ timeout /t 1 >nul
 echo Starting Hose...
 start "Hose" cmd /k title Hose ^& java -cp out Hose
 timeout /t 1 >nul
-
-echo.
-echo Press Q to close all programs...
-
-REM --- Wait for single-key 'Q' (no Enter needed) ---
-:wait_for_q
-choice /c Q /n >nul
-REM The above blocks until 'Q' is pressed
-
-echo Closing all programs...
-for %%T in (Hub Screen Flowmeter CardReader Hose) do (
-    taskkill /fi "WINDOWTITLE eq %%T" /t /f >nul 2>&1
-)
-
-echo Done.
-exit /b 0

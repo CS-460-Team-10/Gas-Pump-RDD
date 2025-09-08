@@ -2,9 +2,11 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-
+import javafx.scene.control.Label;
 import helpers.imageLoader;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
@@ -49,17 +51,17 @@ public class Flowmeter {
      */
     public void flow(double gallons) {
         if(pumping) {
-            gallonsPumped += gallons;
+            this.gallonsPumped += gallons;
             api.send("Flow update:" + gallonsPumped + " gallons pumped.");
         }
     }
     // gets total gallons being pumped
     public double getGallonsPumped() {
-        return gallonsPumped;
+        return this.gallonsPumped;
     }
     // get total cost
     public double getTotalCost() {
-        return gallonsPumped * pricePerGallon;
+        return this.gallonsPumped * pricePerGallon;
     }
     // check message from the ioPort (e.g. control signals).
     public String checkMessage() throws IOException {
@@ -67,39 +69,80 @@ public class Flowmeter {
     }
 
     public static class FlowmeterGraphics extends Application {
-        private Flowmeter meter;
 
         @Override
         public void start(Stage primaryStage) {
-            new Thread(() -> {
-                try {
-                    Flowmeter fm = new Flowmeter(2.49, 2, 2);
-                    this.meter = fm;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }, "Flowmeter-Conn").start();
-
             imageLoader img = new imageLoader();
             img.loadImages();
 
             // Show idle reader image
             StackPane root;
-            ImageView meterView = new ImageView(img.imageList.get(0));
+            ImageView meterView = new ImageView(img.imageList.get(3));
             meterView.setPreserveRatio(true);
             meterView.setFitWidth(300);
             meterView.setSmooth(true);
             meterView.setPickOnBounds(true);
-            meterView.setOnMouseClicked(e -> {
-                this.meter.api.send("Flow meter says hello.");
-            });
 
-            root = new StackPane(meterView);
+            Label fuelCostLabel = new Label();
+            fuelCostLabel.setStyle(
+                "-fx-background-color: rgba(0,0,0,0.6);" +
+                "-fx-text-fill: green;" +
+                "-fx-font-weight: bold;" +
+                "-fx-font-size: 14px;"
+            );
+            
+
+            root = new StackPane(meterView, fuelCostLabel);
+            StackPane.setAlignment(fuelCostLabel, Pos.CENTER);
+            fuelCostLabel.setTranslateY(-48);
 
             Scene scene = new Scene(root, 300, 200);
             primaryStage.setTitle("Flowmeter");
             primaryStage.setScene(scene);
             primaryStage.show();
+
+            new Thread(() -> {
+                try {
+                    Flowmeter meter = new Flowmeter(2.49, 2, 2);
+                    boolean isOn = false;
+
+                    while (true) {
+                        String msg = meter.checkMessage();
+
+                        if (msg != null && !msg.isEmpty()) {
+
+                            if (msg.contains("FM1") && !isOn) {
+                                isOn = true;
+                                System.out.println("Meter is turning ON.");
+                                Platform.runLater(() -> {
+                                    meterView.setImage(img.imageList.get(4));
+                                    fuelCostLabel.setText("00.00-Gal");
+                                });
+                            } else if (msg.contains("FM0") && isOn) {
+                                isOn = false;
+                                System.out.println("Meter is turning OFF.");
+                                meter.stopPumping();
+                                Platform.runLater(() -> {
+                                    meterView.setImage(img.imageList.get(3));
+                                    fuelCostLabel.setText("");
+                                });
+                            }
+                        }
+
+                        // If ON, simulate flow and update label
+                        if (isOn) {
+                            meter.startPumping();
+                            meter.flow(0.16);
+                            String gal = String.format("%.2f-Gal", meter.getGallonsPumped());
+                            Platform.runLater(() -> fuelCostLabel.setText(gal));
+                        }
+
+                        Thread.sleep(1000);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }, "Flowmeter-Conn").start();
         }
     }
 

@@ -19,6 +19,7 @@ public class Hose {
      */
     public Hose(int devieType, int connector) throws IOException {
         this.attached = false;
+        this.tankFull = false;
         this.api = ioPort.ChooseDevice(devieType);
         api.ioport(connector);
         System.out.println("Hose is up: " + connector);
@@ -63,36 +64,45 @@ public class Hose {
 
         @Override
         public void start(Stage primaryStage) {
-            new Thread(() -> {
-                try {
-                    Hose h = new Hose(1, 4);
-                    this.hose = h;
-                    System.out.println("Hose connected (client on 4)");
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }, "Hose-Conn").start();
 
             imageLoader img = new imageLoader();
             img.loadImages();
 
             // Show idle reader image
-            ImageView hoseView = new ImageView(img.imageList.get(3));
+            ImageView hoseView = new ImageView(img.imageList.get(5));
             hoseView.setPreserveRatio(true);
             hoseView.setFitWidth(300);
             hoseView.setSmooth(true);
             hoseView.setPickOnBounds(true);
 
-            final boolean[] toggled = {false}; // Clean this later XXXXXXXXXXXXXX - works for now
-            hoseView.setOnMouseClicked(e -> {
-                if (toggled[0]) {
-                    hoseView.setImage(img.imageList.get(3));
-                } else {
-                    hoseView.setImage(img.imageList.get(4));
+            new Thread(() -> {
+                try {
+                    this.hose = new Hose(1, 4);
+
+                    while (true) {
+                        String msg = hose.api.get();
+
+                        if (msg != null && !msg.isEmpty()) {
+
+                            if(msg.contains("10.") && msg.contains("-Gal")){
+                                this.hose.updateSenor(true, true);
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+            }, "Hose-Conn").start();
+
+            final boolean[] toggled = {false};
+            hoseView.setOnMouseClicked(e -> {
                 toggled[0] = !toggled[0];
-                if (this.hose != null) {
-                    this.hose.updateSenor(toggled[0], false);
+                if (toggled[0]) {
+                    hoseView.setImage(img.imageList.get(6));
+                    hose.updateSenor(true, hose.tankFull);
+                } else {
+                    hoseView.setImage(img.imageList.get(5));
+                    hose.updateSenor(false, hose.tankFull);
                 }
             });
 

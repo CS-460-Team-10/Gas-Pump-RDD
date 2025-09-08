@@ -29,6 +29,7 @@ public class hub {
         String displayScreen = "";
         String in;
         int recipient;
+        String meter; // FM0 = Off; FM1 = On;
 
         // Cycle through screens on 5 second timer
         while (true) {
@@ -38,7 +39,6 @@ public class hub {
             send(displayScreen, recipient);
             System.out.println("Hub Sending: \n" + displayScreen + "\n\n");
             in = get();
-            //System.out.println("PORT VALUE: " + Character.getNumericValue(in.charAt(5))); // TEST
             while(in.charAt(5)!='3'){
                 in = get();
                 System.out.println("Hub Recieving: \n" + in);
@@ -66,13 +66,25 @@ public class hub {
                 in = get();
                 System.out.println("Hub Recieving: \n" + in);
             }
+            recipient = 2;
+            meter = "FM1"; // Flow meter on
+            send(meter, recipient);
 
             // Fueling Screen
             displayScreen = "t23/s2R/f1/c5/\"Fueling in progress...\":t45/s1B/f1/c5/\"*\"";
             recipient = 1;
             send(displayScreen, recipient);
             System.out.println("Hub Sending: \n" + displayScreen + "\n\n");
-            System.out.println("Hub Recieving: \n" + get());
+            in = get();
+            while(!in.equals("Port 4: Tank Full")){
+                if(in.equals("Port 4: Hose detached")) { break; }
+                in = get();
+                System.out.println("Hub Recieving: \n" + in);
+            }
+            recipient = 2;
+            meter = "FM0"; // Flow meter off
+            Thread.sleep(3000);
+            send(meter, recipient);
 
             // Final Screen
             displayScreen = "t01/s2B/f1/c5/\"Transaction complete.\":t45/s3I/f1/c5/\"Thank you!\":t67/s1B/f1/c5/\"*\"";
