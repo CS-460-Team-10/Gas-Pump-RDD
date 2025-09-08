@@ -66,12 +66,9 @@ abstract class ioPort{
             return new ControlPort();
         }
         if (Connector == 3){
-            return new ActuatorPort();
-        }
-        if (Connector == 4){
             return new StatusPort();
         }
-        if (Connector == 5){
+        if (Connector == 4){
             return new MonitorPort();
         }
         return null;
@@ -114,16 +111,6 @@ class ControlPort extends ioPort {
 
 
 class MonitorPort extends ioPort {
-    @Override
-    public void ioport(int Connector) throws UnknownHostException, IOException {
-        connector = Connector;
-        socket = new Socket("localhost", DevicePorts.get(Connector));
-        Out = new PrintWriter(socket.getOutputStream(), true);
-        deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-    }
-}
-
-class ActuatorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
         connector = Connector;

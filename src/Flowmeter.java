@@ -62,7 +62,7 @@ public class Flowmeter {
 
 
 public static void main(String[] args) throws IOException, InterruptedException{
-        Flowmeter fm = new Flowmeter(2.49, 2, 2);
+        Flowmeter fm = new Flowmeter(2.49, 3, 2);
         while (true) {
             String msg = fm.checkMessage();
             if (msg != null) {

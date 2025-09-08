@@ -31,7 +31,7 @@ public class CreditCardReader {
         public void start(Stage primaryStage) {
             new Thread(() -> {
                 try {
-                    CreditCardReader c = new CreditCardReader(1, 3);
+                    CreditCardReader c = new CreditCardReader(3, 3);
                     this.cardReader = c;
                 } catch (Exception e) {
                     e.printStackTrace();

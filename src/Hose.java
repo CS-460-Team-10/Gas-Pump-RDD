@@ -65,7 +65,7 @@ public class Hose {
         public void start(Stage primaryStage) {
             new Thread(() -> {
                 try {
-                    Hose h = new Hose(1, 4);
+                    Hose h = new Hose(3, 4);
                     this.hose = h;
                     System.out.println("Hose connected (client on 4)");
                 } catch (Exception e) {

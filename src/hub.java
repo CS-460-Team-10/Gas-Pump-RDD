@@ -102,11 +102,23 @@ public class hub {
     }
     
     // Start a connection to a device
-    public void ConnectToDevice(int Connector) throws UnknownHostException, IOException{
-        ioPort api = ioPort.ChooseDevice(4); // 4 is StatusPort Type for servers
-        api.ioport(Connector);
-        devices.put(Connector, api);
-        System.out.println("Connector " + Connector + " initialized.");
+    public void ConnectToDevice(int connector) throws UnknownHostException, IOException {
+        int type; // deviceType for ChooseDevice (client role)
+        switch (connector) {
+            case 2:  // Flowmeter
+                type = 2; // ControlPort (client)
+                break;
+            case 4:  // Hose
+                type = 4; // MonitorPort (client)
+                break;
+            default: // Screen (1), CardReader (3), or anything else
+                type = 1; // CommunicatorPort (client)
+        }
+
+        ioPort api = ioPort.ChooseDevice(type); // hub is client
+        api.ioport(connector);                   // connector selects which device/port 
+        devices.put(connector, api);
+        System.out.println("Connector " + connector + " initialized.");
     }
 
     public static void main(String[] args) throws IOException, InterruptedException{
