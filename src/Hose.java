@@ -13,25 +13,26 @@ public class Hose {
     private boolean tankFull;
 
     /**
-     * Hose has a boolean just stating that It's attached or not
-     * @param connector is just the port #
-     * @throws IOException 
+     * Constructor to initialize the hose device.
+     * @param deviceType Type of the device to choose
+     * @param connector Connector/port number to connect the device
+     * @throws IOException if the device initialization fails
      */
-    public Hose(int devieType, int connector) throws IOException {
+    public Hose(int deviceType, int connector) throws IOException {
         this.attached = false;
-        this.api = ioPort.ChooseDevice(devieType);
+        this.api = ioPort.ChooseDevice(deviceType);
         api.ioport(connector);
         System.out.println("Hose is up: " + connector);
 
     }
 
     /**
-     * updateSenor just send a message to the API whether the sensor
-     * is attached or not to the gas tank.
-     * @param sensorAttached is boolean sent by the sensor telling the
-     *                       status of the hose.
+     * Updates the hose sensor status and sends messages to the API.
+     * @param sensorAttached boolean from the sensor that indicates if the hose is attached.
+     * @param sensorTankFull boolean from the sensor that indicates if the tank is full
      */
     public void updateSenor(boolean sensorAttached, boolean sensorTankFull) {
+
         // checks if the hose is attached
         if (sensorAttached && !attached) {
             attached = true;
@@ -40,7 +41,8 @@ public class Hose {
             attached = false;
             api.send("Hose detached");
         }
-        // checks if the tank is full
+
+        // checks the status of the tank
         if (sensorTankFull && !tankFull) {
             tankFull = true;
             api.send("Tank Full");
@@ -50,19 +52,16 @@ public class Hose {
         }
     }
 
-    public boolean isAttached() {
-        return attached;
-    }
-
-    public boolean isTankFull() {
-        return tankFull;
-    }
-
+    /**
+     * Inner class for the GUI representation of the hose.
+     */
     public static class HoseGraphics extends Application {
         private Hose hose;
 
         @Override
         public void start(Stage primaryStage) {
+
+            // Initialize the hose hardware on a background thread
             new Thread(() -> {
                 try {
                     Hose h = new Hose(1, 4);
@@ -73,6 +72,7 @@ public class Hose {
                 }
             }, "Hose-Conn").start();
 
+            // Load images for the GUI representation
             imageLoader img = new imageLoader();
             img.loadImages();
 
@@ -83,28 +83,37 @@ public class Hose {
             hoseView.setSmooth(true);
             hoseView.setPickOnBounds(true);
 
+            // Simple toggle to simulate attaching/detaching the hose
             final boolean[] toggled = {false}; // Clean this later XXXXXXXXXXXXXX - works for now
             hoseView.setOnMouseClicked(e -> {
+
+                // Switch image based on toggle
                 if (toggled[0]) {
                     hoseView.setImage(img.imageList.get(1));
                 } else {
                     hoseView.setImage(img.imageList.get(4));
                 }
                 toggled[0] = !toggled[0];
+
+                // Update hose sensor status
                 if (this.hose != null) {
                     this.hose.updateSenor(toggled[0], false);
                 }
             });
 
+            // Set up GUI layout
             StackPane root = new StackPane(hoseView);
-
             Scene scene = new Scene(root, 300, 200);
+
             primaryStage.setTitle("Hose");
             primaryStage.setScene(scene);
             primaryStage.show();
         }
     }
 
+    /**
+     * Main method to launch JavaFX app.
+     */
     public static void main(String[] args) throws InterruptedException, Exception {
         Application.launch(Hose.HoseGraphics.class, args);
     }
