@@ -1,5 +1,4 @@
 import java.io.IOException;
-
 import helpers.imageLoader;
 import javafx.application.Application;
 import javafx.scene.Scene;

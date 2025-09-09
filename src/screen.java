@@ -1,7 +1,7 @@
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-
+import javafx.application.Platform;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -17,20 +17,23 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 public class screen {
-    ioPort api;
+    private final ioPort api;
 
     public screen(int deviceType, int connector) throws UnknownHostException, IOException { 
         api = ioPort.ChooseDevice(deviceType);  
         api.ioport(connector);     
-     }
-    
+    }
+
+    /**
+     * Inner class for the GUI of the screen.
+     */
     public static class screenGraphics extends Application {
-        private screen sc;
-        private screenConfig config;
+        private screen display;
+
         private ArrayList<horizontal> hList = new ArrayList<>();
         private String[] textFont = { "Serif", "Times New Roman", "Courier New" }; // 3 Fonts Supported
         private Color[] textColor = { Color.BLACK, Color.RED, Color.GREEN, Color.BLUE, Color.WHITE }; // 5 Text Colors Supported
-        Color myBlue = Color.web("#1e3a8a");
+        private Color myBlue = Color.web("#1e3a8a"); // Custom blue color
         private Color[] screenColor = { Color.BLACK, Color.RED, Color.GREEN, myBlue, Color.WHITE }; // 5 Screen Colors Supported
         private int[] textSize = { 30, 20, 15 }; // 3 Text Sizes Supported
         private int hCount = 5; // Number of rows to create in the terminal
@@ -39,29 +42,24 @@ public class screen {
         public void start(Stage primaryStage) {
             initializeScreen(primaryStage);
 
-            // Connect to hub
+            // Process connections
             new Thread(() -> {
                 try {
-                    this.sc = new screen(3, 1);
-                    config = new screenConfig(null);
+                    display = new screen(3, 1);
 
                     // Update screen via messages from hub
                     while (true) {
-                        String msg = sc.api.get();
-                        if (msg != null && !msg.isBlank()) {
-                        int i = msg.indexOf(':');
-                        String uiMsg = (i >= 0) ? msg.substring(i + 1).trim() : msg.trim();
-                        System.out.println("Screen Receiving: \n" + uiMsg);
+                        String msg = display.api.get();
 
-                        javafx.application.Platform.runLater(() -> {
-                            // all UI changes must be on FX thread
-                            if (config == null) {
-                                config = new screenConfig(null); // or skip if your ctor expects a real message
-                            }
-                            config.blankScreen();
-                            config = new screenConfig(uiMsg);
-                        });
-                    }
+                        if (msg != null && !msg.isBlank()) {
+                            String uiMsg = msg.replace("Port 1: ", "");
+                            System.out.println("Screen Receiving: \n" + uiMsg);
+
+                            Platform.runLater(() -> {
+                                blankScreen();
+                                interpretMessage(uiMsg);
+                            });
+                        }
                         Thread.sleep(500);
                     }
                 } catch (Exception e) {
@@ -92,7 +90,6 @@ public class screen {
                 vertical.getChildren().add(h.h);
             }
 
-
             String initialScreenColor = String.format("rgb(%d, %d, %d);",
                 (int) (screenColor[3].getRed() * 255),
                 (int) (screenColor[3].getGreen() * 255),
@@ -104,7 +101,7 @@ public class screen {
             screenStage.show();
         }
 
-        // Horizontal subclass consisting of L/R buttons, fields, and the combined text field
+        // Horizontal subclass consisting of L/R buttons, fields, and the combined text field - all accessible in hList
         private class horizontal {
             HBox h;
             Button bL;
@@ -170,111 +167,104 @@ public class screen {
         // Send data through api
         private void sendData(Button b, int id){
             System.out.println("SCREEN: bp" + id);
-            sc.api.send("bp" + id);
+            display.api.send("bp" + id);
         }
 
-        // Class for sets of screen configurations
-        private class screenConfig {
-            public screenConfig(String msg){
-                if(msg != null && !msg.isBlank()){
-                    interpretMessage(msg);
+        // Create a blank screen
+        public void blankScreen(){              
+            for(horizontal row : hList){
+                row.tL.setText("");
+                row.tLR.setText("");
+                row.tR.setText("");
+                divideTextFields(row.tL, row.tLR, row.tR);
+            }
+        }
+
+        // Interpret markup message (Only pass in what is changing)
+        private void interpretMessage(String msg){
+            String[] tokens = msg.split(":"); // Partition the message
+            boolean wasCombined = false;
+            for(String token : tokens){
+                String[] settings = token.split("/"); // Partition the field settings
+                // Interpret textfield info
+                if(token.charAt(0)=='t'){
+                    String id = settings[0]; // "t0" or "t01"
+                    int fieldNum = Character.getNumericValue(id.charAt(1));
+                    boolean combinedField = id.length() > 2 && Character.isDigit(id.charAt(2));
+
+                    // Determine row number
+                    if(fieldNum%2==0){ wasCombined = false; } // Reset combine history every even field number
+                    int rowNum = fieldNum/2;
+                    horizontal row = hList.get(rowNum);
+
+                    // Determine if field is/was combined and set the textfield configuration
+                    if(combinedField){ 
+                        wasCombined = true;
+                        combineTextFields(row.tL, row.tLR, row.tR);
+                        fieldConfig(row.tLR, settings); 
+                    } 
+                    else if(fieldNum%2==0 && !wasCombined){ fieldConfig(row.tL, settings); } 
+                    else if (!wasCombined){ fieldConfig(row.tR, settings); }
+                }
+                // Interpret button info
+                else if(token.charAt(0)=='b'){ 
+                    // Determine row number
+                    int buttonNum = Character.getNumericValue(token.charAt(1));
+                    int rowNum = buttonNum/2;
+                    horizontal row = hList.get(rowNum);
+
+                    if(buttonNum%2==0){ buttonConfig(row.bL, settings); }
+                    else{ buttonConfig(row.bR, settings); }
                 }
             }
+        }
 
-            // Create a blank screen
-            public void blankScreen(){              
-                for(horizontal row : hList){
-                    row.tL.setText("");
-                    row.tLR.setText("");
-                    row.tR.setText("");
-                    divideTextFields(row.tL, row.tLR, row.tR);
-                }
-            }
+        // Configure text field
+        private void fieldConfig(Label t, String[] tokens){
+            int size = Character.getNumericValue(tokens[1].charAt(1))-1;
+            char style = tokens[1].charAt(2);
+            int font = Character.getNumericValue(tokens[2].charAt(1))-1;
+            int color = Character.getNumericValue(tokens[3].charAt(1))-1;
+            String displayText = tokens[4].replace("\"", "").replace("\\n", "\n");
 
-            // Interpret markup message (Only pass in what is changing)
-            private void interpretMessage(String msg){
-                String[] tokens = msg.split(":"); // Partition the message
-                boolean wasCombined = false;
-                for(String token : tokens){
-                    String[] settings = token.split("/"); // Partition the field settings
-                    // Interpret textfield info
-                    if(token.charAt(0)=='t'){
-                        String id = settings[0]; // "t0" or "t01"
-                        int fieldNum = Character.getNumericValue(id.charAt(1));
-                        boolean combinedField = id.length() > 2 && Character.isDigit(id.charAt(2));
+            t.setTextFill(textColor[color]);
+            t.setFont(Font.font(textFont[font], textSize[size]));
+            if(style == 'B'){makeBold(t);}
+            else if(style == 'I') {makeItalic(t);}
+            t.setText(displayText);
+        }
 
-                        // Determine row number
-                        if(fieldNum%2==0){ wasCombined = false; } // Reset combine history every even field number
-                        int rowNum = fieldNum/2;
-                        horizontal row = hList.get(rowNum);
+        // Configure button
+        private void buttonConfig(Button b, String[] tokens){
+            boolean active = tokens[1].substring(1).equals("1");
+            b.setDisable(!active);
+        }
 
-                        // Determine if field is/was combined and set the textfield configuration
-                        if(combinedField){ 
-                            wasCombined = true;
-                            combineTextFields(row.tL, row.tLR, row.tR);
-                            fieldConfig(row.tLR, settings); 
-                        } 
-                        else if(fieldNum%2==0 && !wasCombined){ fieldConfig(row.tL, settings); } 
-                        else if (!wasCombined){ fieldConfig(row.tR, settings); }
-                    }
-                    // Interpret button info
-                    else if(token.charAt(0)=='b'){ 
-                        // Determine row number
-                        int buttonNum = Character.getNumericValue(token.charAt(1));
-                        int rowNum = buttonNum/2;
-                        horizontal row = hList.get(rowNum);
+        // Make textfield Bold
+        private void makeBold(Label a){ a.setFont(Font.font(a.getFont().getFamily(), FontWeight.BOLD, a.getFont().getSize())); }
 
-                        if(buttonNum%2==0){ buttonConfig(row.bL, settings); } 
-                        else{ buttonConfig(row.bR, settings); }
-                    }
-                }
-            }
+        // Make textfield italic
+        private void makeItalic(Label a){ a.setFont(Font.font(a.getFont().getFamily(), FontPosture.ITALIC, a.getFont().getSize())); }
 
-            // Configure text field
-            private void fieldConfig(Label t, String[] tokens){
-                int size = Character.getNumericValue(tokens[1].charAt(1))-1;
-                char style = tokens[1].charAt(2);
-                int font = Character.getNumericValue(tokens[2].charAt(1))-1;
-                int color = Character.getNumericValue(tokens[3].charAt(1))-1;
-                String displayText = tokens[4].replace("\"", "").replace("\\n", "\n");
+        // Combine 2 left/right text fields into 1 center field
+        private void combineTextFields(Label a, Label ab, Label b){
+            a.setMaxWidth(0);
+            b.setMaxWidth(0);
+            ab.setMaxWidth(Double.MAX_VALUE);
+            a.setText("");
+            b.setText("");
+        }
 
-                t.setTextFill(textColor[color]);
-                t.setFont(Font.font(textFont[font], textSize[size]));
-                if(style == 'B'){makeBold(t);}
-                else if(style == 'I') {makeItalic(t);}
-                t.setText(displayText);
-            }
-
-            // Configure button
-            private void buttonConfig(Button b, String[] tokens){
-                boolean active = tokens[1].substring(1).equals("1");
-                b.setDisable(!active);
-            }
-
-            // Make textfield Bold
-            private void makeBold(Label a){ a.setFont(Font.font(a.getFont().getFamily(), FontWeight.BOLD, a.getFont().getSize())); }
-
-            // Make textfield italic
-            private void makeItalic(Label a){ a.setFont(Font.font(a.getFont().getFamily(), FontPosture.ITALIC, a.getFont().getSize())); }
-
-            // Combine 2 left/right text fields into 1 center field
-            private void combineTextFields(Label a, Label ab, Label b){
-                a.setMaxWidth(0);
-                b.setMaxWidth(0);
-                ab.setMaxWidth(Double.MAX_VALUE);
-                a.setText("");
-                b.setText("");
-            }
-
-            // Divide 1 center text field into 2 left/right fields
-            private void divideTextFields(Label a, Label ab, Label b){
-                a.setMaxWidth(Double.MAX_VALUE);
-                b.setMaxWidth(Double.MAX_VALUE);
-                ab.setMaxWidth(0);
-                ab.setText("");
-            }
+        // Divide 1 center text field into 2 left/right fields
+        private void divideTextFields(Label a, Label ab, Label b){
+            a.setMaxWidth(Double.MAX_VALUE);
+            b.setMaxWidth(Double.MAX_VALUE);
+            ab.setMaxWidth(0);
+            ab.setText("");
         }
     }
-
+    /**
+     * Main method to launch the JavaFX app.
+     */
     public static void main(String[] args) { Application.launch(screen.screenGraphics.class, args); }
 }
