@@ -15,30 +15,31 @@ public class Hose {
     private double maxFuel;
 
     /**
-     * Hose has a boolean just stating that It's attached or not
-     * @param connector is just the port #
-     * @throws IOException 
+     * Constructor to initialize the hose device.
+     * @param deviceType Type of the device to choose
+     * @param connector Connector/port number to connect the device
+     * @throws IOException if the device initialization fails
      */
-    public Hose(int devieType, int connector) throws IOException {
+    public Hose(int deviceType, int connector) throws IOException {
         this.attached = false;
         this.tankFull = false;
         this.maxFuel = 12.0;
         this.fuelLevel = Math.random()*6.0;
         System.out.println("Max Fuel Capacity: " + this.maxFuel);
         System.out.println("Current Fuel Level: " + this.fuelLevel);
-        this.api = ioPort.ChooseDevice(devieType);
+        this.api = ioPort.ChooseDevice(deviceType);
         api.ioport(connector);
         System.out.println("Hose is up: " + connector);
 
     }
 
     /**
-     * updateSenor just send a message to the API whether the sensor
-     * is attached or not to the gas tank.
-     * @param sensorAttached is boolean sent by the sensor telling the
-     *                       status of the hose.
+     * Updates the hose sensor status and sends messages to the API.
+     * @param sensorAttached boolean from the sensor that indicates if the hose is attached.
+     * @param sensorTankFull boolean from the sensor that indicates if the tank is full
      */
     public void updateSenor(boolean sensorAttached, boolean sensorTankFull) {
+
         // checks if the hose is attached
         if (sensorAttached && !attached) {
             attached = true;
@@ -49,7 +50,8 @@ public class Hose {
             System.out.println("Hose detached");
             api.send("Hose detached");
         }
-        // checks if the tank is full
+
+        // checks the status of the tank
         if (sensorTankFull && !tankFull) {
             tankFull = true;
             System.out.println("Tank Full");
@@ -60,14 +62,9 @@ public class Hose {
         }
     }
 
-    public boolean isAttached() {
-        return attached;
-    }
-
-    public boolean isTankFull() {
-        return tankFull;
-    }
-
+    /**
+     * Inner class for the GUI representation of the hose.
+     */
     public static class HoseGraphics extends Application {
         private Hose hose;
 
@@ -127,15 +124,19 @@ public class Hose {
                 }
             });
 
+            // Set up GUI layout
             StackPane root = new StackPane(hoseView);
-
             Scene scene = new Scene(root, 300, 200);
+
             primaryStage.setTitle("Hose");
             primaryStage.setScene(scene);
             primaryStage.show();
         }
     }
 
+    /**
+     * Main method to launch JavaFX app.
+     */
     public static void main(String[] args) throws InterruptedException, Exception {
         Application.launch(Hose.HoseGraphics.class, args);
     }
