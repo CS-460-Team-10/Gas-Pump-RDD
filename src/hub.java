@@ -8,17 +8,6 @@ public class hub {
     Map<Integer, ioPort> devices = new HashMap<>();
     int numOfDevices = 4;
 
-    /*
-     * Connection Map:
-     * ---------------
-     * Screen: 1
-     * Flow Meter: 2
-     * Card Reader: 3
-     * Hose: 4
-     * 
-     * (*NOTE: Connections also need to begin in that sequence too.*)
-     */
-
     public hub() throws IOException, InterruptedException{
 
         // Connect to each device
