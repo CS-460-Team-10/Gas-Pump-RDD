@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "testImageSort",
+      "request": "launch",
+      "mainClass": "helpers.testImageSort",
+      "projectName": "Gas-Pump-Project_f6958f6e"
+    },
+    {
+      "type": "java",
       "name": "Hose",
       "request": "launch",
       "mainClass": "Hose",
