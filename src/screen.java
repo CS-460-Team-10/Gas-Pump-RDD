@@ -42,7 +42,7 @@ public class screen {
             // Connect to hub
             new Thread(() -> {
                 try {
-                    this.sc = new screen(5, 1);
+                    this.sc = new screen(3, 1);
                     config = new screenConfig(null);
 
                     // Update screen via messages from hub
