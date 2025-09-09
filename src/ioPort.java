@@ -7,6 +7,8 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 
+// Base Abstract class for all Port types
+// Hub Uses Client Ports, Devices Use The Server Port
 abstract class ioPort{
     int connector;
     Socket socket;
@@ -18,20 +20,24 @@ abstract class ioPort{
 
 
     public ioPort(){
-        DevicePorts.put(1,  333);
-        DevicePorts.put(2,  555);
-        DevicePorts.put(3,  888);
-        DevicePorts.put(4, 999);
+        // Device to Port Mapping, Used for socket connection and distinction
+        DevicePorts.put(1,  333); // Screen
+        DevicePorts.put(2,  555); // Flowmeter 
+        DevicePorts.put(3,  888); // CreditCardReader
+        DevicePorts.put(4, 999); // Hose
 
     }
+    // used for Opening the connetion for this port, either client or Server, on the given connector
     public abstract void ioport(int Connector) throws UnknownHostException, IOException;
 
-
+    // send a single line message
     public void send(String Message){
         if (Out != null){
             Out.println(Message);
         }
     }
+    // Non-blocking poll which returns the next line if available, otherwise null
+    // Acts like a one-slot queue. Used by the hub to receive device messages    
     public String get() {
         try {
             if (deviceResponse != null && deviceResponse.ready()) {
@@ -45,7 +51,7 @@ abstract class ioPort{
         LastMessage = null;
         return tmp;
     }
-
+    // Quick read without clearing the saved line (returns the last seen line)
     public String read() {
 
     try {
@@ -57,7 +63,11 @@ abstract class ioPort{
         }
         return LastMessage;
     }
-
+    // Choose a port specialization by role, not by connector id, so 
+    // 1 = Communicator (client)
+    // 2 = Control (client)
+    // 3 = Status (server)      
+    //4 = Monitor (client)
     public static ioPort ChooseDevice(int Connector){
         if (Connector == 1){
             return new CommunicatorPort();        
@@ -75,6 +85,8 @@ abstract class ioPort{
     }
 
 }
+
+// Communicator port Used for general communciation between hub and the servers
 class CommunicatorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
@@ -85,7 +97,7 @@ class CommunicatorPort extends ioPort {
     }
 
 }
-
+//Status Port Used for receiving status updates from devices to hub, Our server-to-Client Communciator
 class StatusPort extends ioPort {
     ServerSocket srSocket;
     @Override
@@ -98,7 +110,7 @@ class StatusPort extends ioPort {
     }
 
 }
-
+// ControlPort, mainly used for communciation with flowmeter 
 class ControlPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
@@ -109,7 +121,7 @@ class ControlPort extends ioPort {
     }
 }
 
-
+// MonitorPort, Mainly used for communication with the GUI
 class MonitorPort extends ioPort {
     @Override
     public void ioport(int Connector) throws UnknownHostException, IOException {
