@@ -23,7 +23,9 @@ public class Hose {
         this.attached = false;
         this.tankFull = false;
         this.maxFuel = 12.0;
-        this.fuelLevel = Math.random()*12.0;
+        this.fuelLevel = Math.random()*6.0;
+        System.out.println("Max Fuel Capacity: " + this.maxFuel);
+        System.out.println("Current Fuel Level: " + this.fuelLevel);
         this.api = ioPort.ChooseDevice(devieType);
         api.ioport(connector);
         System.out.println("Hose is up: " + connector);
@@ -40,14 +42,17 @@ public class Hose {
         // checks if the hose is attached
         if (sensorAttached && !attached) {
             attached = true;
+            System.out.println("Hose attached");
             api.send("Hose attached");
         } else if (!sensorAttached && attached) {
             attached = false;
+            System.out.println("Hose detached");
             api.send("Hose detached");
         }
         // checks if the tank is full
         if (sensorTankFull && !tankFull) {
             tankFull = true;
+            System.out.println("Tank Full");
             api.send("Tank Full");
         } else if (!sensorTankFull && tankFull) {
             tankFull = false;
@@ -81,11 +86,28 @@ public class Hose {
 
             new Thread(() -> {
                 try {
-                    this.hose = new Hose(3, 4);
+                    hose = new Hose(3, 4);
 
                     while (true) {
-                        if(this.hose.fuelLevel >= this.hose.maxFuel){ // Tank full
-                            this.hose.updateSenor(true, true);
+                        String msg = hose.api.get();
+
+                        if (msg != null && !msg.isEmpty()) {
+                            if(msg.contains("Gal Pumped:")){
+                                String[] tokens = msg.split(":");
+                                if (tokens.length > 1) {
+                                    try {
+                                        double fuelBought = Double.parseDouble(tokens[3].trim());
+                                        hose.fuelLevel += fuelBought;
+                                        System.out.println("Fuel Level updated: " + String.format("%.2f", hose.fuelLevel) + " gallons");
+                                    } catch (NumberFormatException e) {
+                                        System.err.println("Error parsing fuel amount from message: " + msg);
+                                    }
+                                }
+                            }
+                        }
+
+                        if(hose.fuelLevel >= hose.maxFuel){ // Tank full
+                            hose.updateSenor(true, true);
                         }
                     }
                 } catch (Exception e) {

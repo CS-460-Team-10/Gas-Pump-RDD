@@ -80,6 +80,10 @@ public class hub {
             in = get();
             while(!in.equals("Port 4: Tank Full")){
                 if(in.equals("Port 4: Hose detached")) { midDisco = true; break; } // Mid fuel disconnect stop
+                if(in.contains("Gal Pumped:")) { 
+                    recipient = 4;
+                    send(in, recipient); 
+                }
                 in = get();
                 System.out.println("Hub Recieving: \n" + in);
             }

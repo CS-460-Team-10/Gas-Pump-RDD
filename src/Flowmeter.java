@@ -120,10 +120,9 @@ public class Flowmeter {
                                 System.out.println("Meter is turning OFF.");
                                 meter.stopPumping();
                                 meter.gallonsPumped = 0.0;
-                                Platform.runLater(() -> {
-                                    meterView.setImage(img.imageList.get(3));
-                                    fuelCostLabel.setText("");
-                                });
+                                Platform.runLater(() -> { meterView.setImage(img.imageList.get(3)); });
+                                Thread.sleep(5000);
+                                Platform.runLater(() -> { fuelCostLabel.setText(""); });
                             }
                         }
 
@@ -133,6 +132,7 @@ public class Flowmeter {
                             meter.flow(0.16);
                             String gal = String.format("%.2f-Gal", meter.getGallonsPumped());
                             Platform.runLater(() -> fuelCostLabel.setText(gal));
+                            meter.api.send("Gal Pumped: " + meter.gallonsPumped);
                         }
 
                         Thread.sleep(100);
