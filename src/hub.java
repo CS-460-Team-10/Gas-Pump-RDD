@@ -30,6 +30,7 @@ public class hub {
         String in;
         int recipient;
         String meter; // FM0 = Off; FM1 = On;
+        boolean midDisco;
 
         // Cycle through screens on 5 second timer
         while (true) {
@@ -50,8 +51,9 @@ public class hub {
             recipient = 1;
             send(displayScreen, recipient);
             System.out.println("Hub Sending: \n" + displayScreen + "\n\n");
+            midDisco = false;
             in = get();
-            while(in.charAt(5)!='1'){
+            while(in.charAt(5)!='1' && (!in.contains("bps2/3") || !in.contains("bps4/3") || !in.contains("bps6/3") || !in.contains("bps8/3"))){ // Ensure button sequencing
                 in = get();
                 System.out.println("Hub Recieving: \n" + in);
             }
@@ -77,14 +79,24 @@ public class hub {
             System.out.println("Hub Sending: \n" + displayScreen + "\n\n");
             in = get();
             while(!in.equals("Port 4: Tank Full")){
-                if(in.equals("Port 4: Hose detached")) { break; }
+                if(in.equals("Port 4: Hose detached")) { midDisco = true; break; } // Mid fuel disconnect stop
                 in = get();
                 System.out.println("Hub Recieving: \n" + in);
             }
-            recipient = 2;
-            meter = "FM0"; // Flow meter off
-            Thread.sleep(3000);
-            send(meter, recipient);
+            // Clean fuel stop
+            if(!midDisco){
+                recipient = 2;
+                meter = "FM0"; // Flow meter off
+                Thread.sleep(3000);
+                send(meter, recipient);
+            } 
+            // Mid fuel flow valve disconnect - emergency stop initiated
+            else {
+                recipient = 2;
+                meter = "FM0"; // Flow meter off
+                send(meter, recipient);
+                Thread.sleep(3000);
+            }
 
             // Final Screen
             displayScreen = "t01/s2B/f1/c5/\"Transaction complete.\":t45/s3I/f1/c5/\"Thank you!\":t67/s1B/f1/c5/\"*\"";

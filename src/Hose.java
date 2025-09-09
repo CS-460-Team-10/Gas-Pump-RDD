@@ -11,6 +11,8 @@ public class Hose {
     private boolean attached;
     private final ioPort api;
     private boolean tankFull;
+    private double fuelLevel;
+    private double maxFuel;
 
     /**
      * Hose has a boolean just stating that It's attached or not
@@ -20,6 +22,8 @@ public class Hose {
     public Hose(int devieType, int connector) throws IOException {
         this.attached = false;
         this.tankFull = false;
+        this.maxFuel = 12.0;
+        this.fuelLevel = Math.random()*12.0;
         this.api = ioPort.ChooseDevice(devieType);
         api.ioport(connector);
         System.out.println("Hose is up: " + connector);
@@ -77,16 +81,11 @@ public class Hose {
 
             new Thread(() -> {
                 try {
-                    this.hose = new Hose(1, 4);
+                    this.hose = new Hose(3, 4);
 
                     while (true) {
-                        String msg = hose.api.get();
-
-                        if (msg != null && !msg.isEmpty()) {
-
-                            if(msg.contains("10.") && msg.contains("-Gal")){
-                                this.hose.updateSenor(true, true);
-                            }
+                        if(this.hose.fuelLevel >= this.hose.maxFuel){ // Tank full
+                            this.hose.updateSenor(true, true);
                         }
                     }
                 } catch (Exception e) {

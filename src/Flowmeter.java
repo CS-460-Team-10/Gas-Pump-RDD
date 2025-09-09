@@ -41,9 +41,6 @@ public class Flowmeter {
         + ", Cost: $" + getTotalCost());
     }
 
-
-
-
     /**
      * This code simulates fuel flow increasing gallons pumped.
      * in a real station.
@@ -103,7 +100,7 @@ public class Flowmeter {
 
             new Thread(() -> {
                 try {
-                    Flowmeter meter = new Flowmeter(2.49, 2, 2);
+                    Flowmeter meter = new Flowmeter(2.49, 3, 2);
                     boolean isOn = false;
 
                     while (true) {
@@ -122,6 +119,7 @@ public class Flowmeter {
                                 isOn = false;
                                 System.out.println("Meter is turning OFF.");
                                 meter.stopPumping();
+                                meter.gallonsPumped = 0.0;
                                 Platform.runLater(() -> {
                                     meterView.setImage(img.imageList.get(3));
                                     fuelCostLabel.setText("");
@@ -137,7 +135,7 @@ public class Flowmeter {
                             Platform.runLater(() -> fuelCostLabel.setText(gal));
                         }
 
-                        Thread.sleep(1000);
+                        Thread.sleep(100);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
