@@ -8,10 +8,13 @@ public class hub {
     // Device IDs/mapping
     private static final int SCREEN = 1;
     private static final int FLOW_METER = 2;
-    //private static final int CARD_READER = 3; - Unused variable
+    private static final int CARD_READER = 3; // - Unused variable
     private static final int HOSE = 4;
+    private static final int BANK = 5;
+    private static final int GAS_STATION = 6;
     private final Map<Integer, ioPort> devices = new HashMap<>();
-    private final int deviceCount = 4;
+    private final int deviceCount = 6;
+
 
     // UI display markup codes
     private static final String UI_WELCOME =

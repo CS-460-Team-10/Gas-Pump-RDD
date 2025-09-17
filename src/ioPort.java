@@ -25,6 +25,8 @@ abstract class ioPort{
         DevicePorts.put(2,  555); // Flowmeter 
         DevicePorts.put(3,  888); // CreditCardReader
         DevicePorts.put(4, 999); // Hose
+        DevicePorts.put(5, 777); // Bank 
+        DevicePorts.put(6, 666); // gas station
 
     }
     // used for Opening the connetion for this port, either client or Server, on the given connector
@@ -131,3 +133,4 @@ class MonitorPort extends ioPort {
         deviceResponse = new BufferedReader(new InputStreamReader(socket.getInputStream()));
     }
 }
+

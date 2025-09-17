@@ -3,6 +3,20 @@
   "configurations": [
     {
       "type": "java",
+      "name": "GasStation",
+      "request": "launch",
+      "mainClass": "GasStation",
+      "projectName": "Gas-Pump-RDD_c786bb7e"
+    },
+    {
+      "type": "java",
+      "name": "TheBank",
+      "request": "launch",
+      "mainClass": "TheBank",
+      "projectName": "Gas-Pump-RDD_c786bb7e"
+    },
+    {
+      "type": "java",
       "name": "testImageSort",
       "request": "launch",
       "mainClass": "helpers.testImageSort",
