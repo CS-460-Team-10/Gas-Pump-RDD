@@ -20,14 +20,16 @@ public class Flowmeter {
     private double gallonsPumped;
     private double pricePerGallon;
     private boolean pumping;
+    private String fuelType;
     static PrintWriter out;
     static BufferedReader bf;
     ioPort api;
 
-    public Flowmeter(double pricePerGallon, int deviceType, int connector) throws IOException {
+    public Flowmeter(double pricePerGallon, int deviceType, int connector, String fuelType) throws IOException {
         this.pricePerGallon = pricePerGallon;
         this.gallonsPumped = 0.0;
         this.pumping = false;
+        this.fuelType = fuelType;
 
         api = ioPort.ChooseDevice(deviceType);
         api.ioport(connector);
@@ -36,12 +38,22 @@ public class Flowmeter {
     // Starts pumping fuel
     public void startPumping() {
         pumping = true;
-        api.send(String.format("Pumping started. Price per gallon: $%.2f", pricePerGallon));
+        // api.send(String.format("Pumping started. Price per gallon: $%.2f", pricePerGallon));
+        api.send("pump-on");
+        api.send(String.format("gas-to-pump:%s", fuelType));
     }
     // Stops pumping fuel
     public void stopPumping() {
         pumping = false;
-        api.send(String.format("Pump stopped. Total gallons: %.2f" + ", Cost: $%.2f", gallonsPumped, getTotalCost()));
+        // api.send(String.format("Pump stopped. Total gallons: %.2f" + ", Cost: $%.2f", gallonsPumped, getTotalCost()));
+        api.send("pump-off");
+        api.send(String.format("transaction: gallons = %.2f cost = %.2f",
+                gallonsPumped, getGallonsPumped()));
+    }
+    // reset volume counter
+    public void reset() {
+        gallonsPumped = 0.0;
+        api.send("reset");
     }
 
     /**
@@ -52,7 +64,7 @@ public class Flowmeter {
     public void flow(double gallons) {
         if(pumping) {
             this.gallonsPumped += gallons;
-            api.send(String.format("Flow update: %.2f " + "gallons pumped.", gallonsPumped));
+            api.send(String.format("volume: %.2f " + "gallons pumped.", gallonsPumped));
         }
     }
     // gets total gallons being pumped
@@ -109,7 +121,7 @@ public class Flowmeter {
             // Process connections
             new Thread(() -> {
                 try {
-                    meter = new Flowmeter(2.49, 3, 2);
+                    meter = new Flowmeter(2.49, 3, 2, "Regular");
                     boolean isOn = false;
 
                     while (true) {

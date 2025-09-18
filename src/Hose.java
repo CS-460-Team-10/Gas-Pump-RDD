@@ -7,7 +7,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 public class Hose {
-    private boolean attached;
+    private boolean connected;
     private final ioPort api;
     private boolean tankFull;
     private double fuelLevel;
@@ -20,7 +20,7 @@ public class Hose {
      * @throws IOException if the device initialization fails
      */
     public Hose(int deviceType, int connector) throws IOException {
-        this.attached = false;
+        this.connected = false;
         this.tankFull = false;
         this.maxFuel = 12.0;
         this.fuelLevel = Math.random()*6.0;
@@ -34,30 +34,30 @@ public class Hose {
 
     /**
      * Updates the hose sensor status and sends messages to the API.
-     * @param sensorAttached boolean from the sensor that indicates if the hose is attached.
+     * @param sensorConnected boolean from the sensor that indicates if the hose is connected.
      * @param sensorTankFull boolean from the sensor that indicates if the tank is full
      */
-    public void updateSenor(boolean sensorAttached, boolean sensorTankFull) {
+    public void updateSenor(boolean sensorConnected, boolean sensorTankFull) {
 
-        // checks if the hose is attached
-        if (sensorAttached && !attached) {
-            attached = true;
-            System.out.println("Hose attached");
-            api.send("Hose attached");
-        } else if (!sensorAttached && attached) {
-            attached = false;
-            System.out.println("Hose detached");
-            api.send("Hose detached");
+        // checks if the hose is connected
+        if (sensorConnected && !connected) {
+            connected = true;
+            System.out.println("Hose Connected");
+            api.send("connected:true");
+        } else if (!sensorConnected && connected) {
+            connected = false;
+            System.out.println("Hose Disconnected");
+            api.send("connected:false");
         }
 
         // checks the status of the tank
         if (sensorTankFull && !tankFull) {
             tankFull = true;
             System.out.println("Tank Full");
-            api.send("Tank Full");
+            api.send("tank-full:true");
         } else if (!sensorTankFull && tankFull) {
             tankFull = false;
-            api.send("Tank is not full");
+            api.send("tank-full:false");
         }
     }
 
