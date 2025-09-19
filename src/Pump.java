@@ -19,18 +19,42 @@ public class Pump {
     }
 
     /**
+     * this is the action that will be used for gas pump controller to
+     * that will turn on the pump.
+     */
+    public synchronized void pumpOn() {
+        if(!pumping) {
+            pumping = true;
+            System.out.println("Pump is On - pumping gas");
+            api.send("Pump ON");
+        }
+    }
+
+    /**
+     * Action that will be used for gas pump controller
+     * when the gas pump is off
+     */
+    public synchronized void pumpOff() {
+        if (pumping) {
+            pumping = false;
+            System.out.println("Pump is OFF - not pumping");
+            api.send("Pump OFF");
+        }
+    }
+
+    /**
      * updates the pump sensor status and sends messages ti the API.
      * @param sensorPumping boolean that indicates if pump is on or off
      */
     public void updateSensor(boolean sensorPumping) {
         if (sensorPumping && !pumping) {
-            pumping = true;
-            System.out.println("Pump is ON - pumping gas");
-            api.send("Pump ON");
+            pumpOn();
         } else if (!sensorPumping && pumping) {
-            pumping = false;
-            System.out.println("Pump is OFF - not pumping");
-            api.send("Pump OFF");
+            pumpOff();
         }
+    }
+
+    public boolean isPumping() {
+        return pumping;
     }
 }
